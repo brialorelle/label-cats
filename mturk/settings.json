@@ -1,0 +1,16 @@
+{
+    "title":               "Infant development survey",
+    "description":         "A short survey about what objects your child (0 - 2years)i s familiar with ",
+    "keywords":            "Object recognition, language learning",
+    "url":                 "https://brialorelle.github.io/label-concept/famRatings/famRatingsVersion1.html",
+    "frame_height":         450,
+    "assignment_duration":  "1 hour",
+    "auto_approval_delay":  "5 minutes",
+    "reward":               0.60,
+    "experimenter":         "Bria Long",
+    "server_log_path":      "http://langcog.stanford.edu/cgi-bin/cosub/log_submission.php"
+    "qualifications": {
+        "location": "US",
+        "approval_percentage": 85
+    }
+}
