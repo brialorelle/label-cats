@@ -133,7 +133,7 @@ var experiment = {
 		comments: [],
 		ethnicity:[],
 		race: [],
-		childAge:[],
+		childsAge:[],
 	},
 
 
@@ -239,7 +239,7 @@ var experiment = {
 		experiment.data.education.push(document.getElementById("education").value);
 		experiment.data.comments.push(document.getElementById("comments").value);
 		experiment.data.ethnicity.push(document.getElementById("ethnicity").value);
-        experiment.data.childAge.push(document.getElementById("childsAge").value);
+        experiment.data.childsAge.push(document.getElementById("childsAge").value);
 		experiment.end();
 	}
 }
