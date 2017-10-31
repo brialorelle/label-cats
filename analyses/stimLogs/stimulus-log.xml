@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DocumentRoot>
+  <StimuliInfo>
+    <StimulusInformation GUID="3579c1ba-6565-4401-8fb9-75cb67a0a710" Name="Elmos World The Sky Active1.avi" Type="Movie">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="bc762c54-2bc6-4465-a6f2-66493f2da050" Name="Calibration" Type="Calibration">
+      <Properties>
+        <Property GUID="52835a6a-f6a5-4b1f-8ce8-38afa8a1da6d" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="c04e9b13-68df-4081-b8c4-d385ecf770e3" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="c4201613-ba37-425f-b629-1edaba7718a2" Name="09_bikeBell_vintage.jpg" Type="Image" StimulusFile="3a93abb2f35043713c692e0e5d87201f_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="e321dc7c-706b-4279-89ca-f615ba7da940" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="c815a4f5-c28b-45a5-9b4f-c62749c7357d" Name="02_bikeBell_Ding-Dong-bicycle-bell-bing-bong-bermuda-bike-bells-chrome-1.jpg" Type="Image" StimulusFile="581f17319b624906f2e417893b635786_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="7ad9aedc-67b1-4adb-ab37-55e64fc9fc6c" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="13c43726-b4f1-48fd-98df-c96230e35901" Name="08_bikeBell_black2.jpg" Type="Image" StimulusFile="46521a744d49c36ea3667b0e58078a89_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="fc51c398-9577-4563-89bf-632fcb0f7282" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="d4b535f6-d91a-4de6-89f7-95fc3f3c7fa8" Name="06_bikeBell_copper.jpg" Type="Image" StimulusFile="ce542bb94cfe6414589dfe35e5967332_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="a6e7930f-6846-47d9-ba0c-9718e88856c1" Name="ball-calibration1.avi" Type="Movie" StimulusFile="54d0cc5be0613b8e87cf061e42b4bc07.avi" FitToScreen="True" />
+    <StimulusInformation GUID="e1262c74-a472-49a7-a06e-70d7fdd0af33" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="91c0e1de-9fdf-4f5d-9f55-4a6081535f98" Name="01_bikeBell_2.jpg" Type="Image" StimulusFile="66f3030fbb9318564d6d349e4cfc4415_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="008abdcd-4128-4de1-913c-014b025f20e5" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="1d0961a8-2565-48b8-bea8-917e315fa74f" Name="03_bikeBell_bikeBell2.jpg" Type="Image" StimulusFile="ee703204d8b210eb4f8a69352a9f8058_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="51d1e8bd-0d76-42e0-9d79-adda28901a06" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="6f480304-962d-494b-a7c1-dbd7fce8bc6c" Name="05_bikeBell_black.jpg" Type="Image" StimulusFile="1fdaae4f72d2e94209429c9b2204d769_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="8b723e63-7d8e-474e-b12b-89c31a218d3e" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="c1a63a56-ab28-43e3-9ee8-24b3153426c2" Name="07_bikeBell_green.jpg" Type="Image" StimulusFile="3a3afc8a35730b473d0fed773d13198a_1920x1080.jpg">
+      <Properties>
+        <Property GUID="4d702eb4-48ef-4103-8ea6-4216f348ae74" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="3ab55bbb-1af9-46e7-9d0d-668d9ca2a411" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="09e689bb-1ed0-454c-939e-1175fb6d9670" Name="testTrial1-usbRight" Type="Composite" StimulusFile="d2e64520b132f1ec42e206463a92a38d_1920x1080.jpg">
+      <Properties>
+        <Property GUID="f4d75df7-351c-4fa5-83b1-b1871449b317" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="3c475c19-e7e1-4fb5-b24d-c38c2873efcd" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="9f9344d5-9ab0-4785-ab31-688ff06abea4" Name="testTrial3-yoyo" Type="Composite" StimulusFile="6bca3db4a54612b82a3536be6c69381f_1920x1080.jpg">
+      <Properties>
+        <Property GUID="f4d75df7-351c-4fa5-83b1-b1871449b317" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="4fe0e47d-5cfe-4a22-a804-bfc253623c7a" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="ec3d2204-48e8-499c-aeaa-05373d078dd9" Name="testTrial2-holepunch" Type="Composite" StimulusFile="2c8a3a716532f6f159efdafc74ea8332_1920x1080.jpg">
+      <Properties>
+        <Property GUID="f4d75df7-351c-4fa5-83b1-b1871449b317" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="db56d6d4-1abb-4b00-b0e5-852fc1c5ed40" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="5c2b9ec1-23ae-49d6-952e-e95111b0c72b" Name="testTrial3-yoyo" Type="Composite" StimulusFile="6bca3db4a54612b82a3536be6c69381f_1920x1080.jpg">
+      <Properties>
+        <Property GUID="b50e44ef-7a53-4ad4-88c5-90d886dace26" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="917fd749-88f5-479e-8ea5-b97380bd8ec3" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="d4eda04f-c8cc-4003-ae8f-c8827342c06d" Name="testTrial1-usbRight" Type="Composite" StimulusFile="d2e64520b132f1ec42e206463a92a38d_1920x1080.jpg">
+      <Properties>
+        <Property GUID="b50e44ef-7a53-4ad4-88c5-90d886dace26" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="aa5e379b-2ae1-49f0-904e-f4b6f9a17c3e" Name="babyAttentionGetter_Exp5.avi" Type="Movie" StimulusFile="bada7b3a6cd1d461f885d055ad7d2fca.avi" FitToScreen="True">
+      <Properties>
+        <Property GUID="0c6332b1-b3b6-46c4-9c57-3b133265d861" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="c7d9139d-38e0-43b1-b31b-928c71ca3e5b" Name="testTrial2-holepunch" Type="Composite" StimulusFile="2c8a3a716532f6f159efdafc74ea8332_1920x1080.jpg">
+      <Properties>
+        <Property GUID="b50e44ef-7a53-4ad4-88c5-90d886dace26" />
+      </Properties>
+    </StimulusInformation>
+    <StimulusInformation GUID="ac9c31fb-2f13-41b3-be8a-02dc8fdf44b2" Name="ball-calibration1.avi" Type="Movie" StimulusFile="54d0cc5be0613b8e87cf061e42b4bc07.avi" FitToScreen="True" />
+    <StimulusInformation GUID="3585d57a-43e7-4855-8c57-1efe9b645798" Name="elmo_quiet_curtains.avi" Type="Movie" />
+  </StimuliInfo>
+</DocumentRoot>

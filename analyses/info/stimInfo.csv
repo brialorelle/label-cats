@@ -1,0 +1,21 @@
+StimNumber,stimulus,,,,TrialType,StimName,level,daxPos,distPos,targetOnset
+1,bada7b3a6cd1d461f885d055ad7d2fca.avi,,,,CenterAttn,babyAttentionGetter_Exp5,NA,NA,NA,0
+2,46521a744d49c36ea3667b0e58078a89_1920x1080,,,,Fam,08_bikeBell_black2,NA,NA,NA,0
+3,3a93abb2f35043713c692e0e5d87201f_1920x1080,,,,Fam,09_bikeBell_vintage,NA,NA,NA,0
+4,ee703204d8b210eb4f8a69352a9f8058_1920x1080,,,,Fam,03_bikeBell_bikeBell2,NA,NA,NA,0
+5,66f3030fbb9318564d6d349e4cfc4415_1920x1080,,,,Fam,01_bikeBell_2,NA,NA,NA,0
+6,54d0cc5be0613b8e87cf061e42b4bc07,,,,Cabliration,ball-calibration1,NA,NA,NA,0
+7,ce542bb94cfe6414589dfe35e5967332_1920x1080,,,,Fam,06_bikeBell_copper,NA,NA,NA,0
+8,1fdaae4f72d2e94209429c9b2204d769_1920x1080,,,,Fam,05_bikeBell_black,NA,NA,NA,0
+9,581f17319b624906f2e417893b635786_1920x1080,,,,Fam,02_bikeBell_,NA,NA,NA,0
+10,3a3afc8a35730b473d0fed773d13198a_1920x1080,,,,Fam,07_bikeBell_green,NA,NA,NA,0
+11,1134c781afb2443b01a3aecffa3bf606_1920x1080,,,,TestTrial,testTrial1-usbLeft,2,R,L,0
+12,d88cabc2ebd6b2a30226ccd1a1d382cc_1920x1080,,,,TestTrial,testTrial3-yoyoLeft,1,R,L,0
+13,2e933c150277bc5049c2740479f687e7_1920x1080,,,,TestTrial,testTrial2-holepunchRight,3,L,R,0
+14,e3deb878741973d3941f35cbde071e3e_1920x1080,,,,WordLearn,Word Learn USB,2,R,L,0
+15,36d3de446d9062e8bde0fa75ed960463_1920x1080,,,,WordLearn,Word Learn Hole Punch,3,L,R,0
+16,ef9633f47177770b6e267c8fdfd0b4d5_1920x1080,,,,WordLearn,Word Learn Yoyo,1,R,L,0
+17,bba60bed6b80131dab24274572587597_1920x1080,,,,WordLearn,Word Learn Yoyo,1,R,L,0
+18,2c8a3a716532f6f159efdafc74ea8332_1920x1080,,,,WordLearn,Word Learn Hole Punch,3,L,R,0
+19,6bca3db4a54612b82a3536be6c69381f_1920x1080,,,,WordLearn,Word Learn Yoyo,1,R,L,0
+20,d2e64520b132f1ec42e206463a92a38d_1920x1080,,,,WordLearn,Woed Learn USB,2,R,L,0

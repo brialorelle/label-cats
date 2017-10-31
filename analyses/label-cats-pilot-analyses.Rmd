@@ -1,0 +1,183 @@
+---
+title: "label-cats pilot analyses"
+author: "Bria Long"
+date: "10/25/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Pilot analyses for the label-cats (label-categories) experiment, run during late october at CDM. 
+
+```{r}
+################ PRELIMINARIES #################
+# Directories and helper code
+rm(list = ls())
+setwd("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/")
+
+# Get two sets of codes useful for eyetracking data
+source("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/HelperCode/useful.R")
+source("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/HelperCode/et_helper_bll.R")
+
+## Read in pre-processed data stream
+d <- read.csv("processed_data/labelcats-pilot-all.csv")
+head(d)
+
+## Mark NAs in dataset
+d$x[d$LeyeValid==0 | d$ReyeValid==0] <- NA  ## only get data where L/R eyes are valid
+d$y[d$LeyeValid==0 | d$ReyeValid==0] <- NA  ## only get data where L/R eyes are valid
+
+# then, make those x and y's that fell on (0, 1050) as weird default be treated as NA's.
+d$x[d$y== "1080" & d$x=="0"] <- NA
+d$y[d$y== "1080"] <- NA
+
+## Read in .csv sheet with the SMI names for the stimuli we're going to be looking at
+condOrder <- read.csv("info/stimInfo.csv")
+head(condOrder)
+nrow(d) # first check number of rows
+
+## now join in the orders
+d <- join(d, condOrder) # use join rather than merge because it doesn't sort
+nrow(d) # check number of rows again
+
+## count if there were test trials in each kid
+testTrialCount <- d %>%
+  group_by(subid, TrialType) %>%
+  filter(TrialType =="TestTrial") %>%
+  summarise(testTrialCount = length(unique(stimulus)))
+
+# get rid of subjects who never made it to test trials
+d <- d %>%
+  filter(is.element(subid,testTrialCount$subid))
+
+# count what proportion of the time kids were looking at test trials
+na_props <- d %>%
+  group_by(subid, TrialType) %>%
+  filter(TrialType =="TestTrial") %>%
+  summarize(samples = length(x), na_prop = sum(is.na(x)) / length(x)) 
+
+# exclude subjects who didn't look at the screen during test trials >75% of the time
+propThres=.9
+includedSubs=na_props$subid[na_props$na_prop<propThres & na_props$TrialType=='TestTrial']
+
+d <- d %>%
+  filter(is.element(subid,includedSubs))
+
+# check we filtered subjects
+unique(d$subid)
+```
+Sanity check: let's make density plots for calibration and test trials for these included subjects,
+and make sure there is data to analyze
+
+```{r, echo=FALSE}
+# Look at recalibration trials
+qplot(x,y,
+      facets = ~subid,
+      geom="density2d",
+      data=subset(d,TrialType == "Cabliration"),
+      xlim=c(0,1920),
+      ylim=c(0,1080))
+
+# Look at test trials
+qplot(x,y,
+      facets = ~subid,
+      geom="density2d",
+      data=subset(d,TrialType == "TestTrial"),
+      xlim=c(0,1920),
+      ylim=c(0,1080))
+
+```
+
+A few more pre-processing steps before plotting...
+```{r}
+# only get the test trials we care about - word leanring and silent test trials
+toFilter=c('WordLearn','TestTrial')
+d <- d %>%
+  filter(is.element(TrialType,toFilter)) %>%
+  filter(!is.na(x)) %>% # get rid time points without data
+  filter(!is.na(y)) 
+
+# 2. Define the target ROIs (regions of interest)
+rois <- list()
+rois[[1]] <- c(0,200,768,600) # left
+rois[[2]] <- c(1152,200,768,600) # right
+names(rois) <- c("L","R")
+roi.image(rois)
+
+# #just blanket left/right side of the screen
+# rois <- list()
+# rois[[1]] <- c(0,0,960,1080) # left
+# rois[[2]] <- c(960,0,960,1080) # right
+# names(rois) <- c("L","R")
+# roi.image(rois)
+
+# use check code to make sure that ROIs look right
+d$roi <- roi.check(d,rois) 
+
+# see how the distribution of ROIs looks
+qplot(roi,data=d) # mostly looking in one or the other
+qplot(x,y,
+      facets = ~subid,
+      geom="density2d",
+      data=d,
+      xlim=c(0,1920),
+      ylim=c(0,1080))
+
+# set up novelty score
+d$novelty <- ifelse(d$roi == d$distPos, "1", "0")
+d$novelty <- as.numeric(d$novelty)
+qplot(roi,data=d, facets=~subid)
+
+## 3. Align trials to the onset of the critical word
+d <- rezero.trials(d) 
+
+## 4. subsample the data so that you get smooth curves
+##    I like to do this when I don't have much data so that I'm not distracted 
+##    by the variation in the data, but then relax the subsampling if I have more data.
+
+subsample.hz <- 10 # 10 hz is decent, eventually we should set to 30 or 60 hz
+d$t.crit.binned <- round(d$t.crit*subsample.hz)/subsample.hz # subsample step
+```
+################ ANALYSES #################
+Make some simple plots based on trial types
+```{r}
+
+## 1. TRIAL TYPE ANALYSIS (silence v word learning)
+ms <- aggregate(novelty ~ t.crit.binned + TrialType, d, mean)
+qplot(t.crit.binned, novelty,
+      colour=TrialType,
+      geom="point",      
+      data=ms) + 
+  geom_hline(yintercept=.5,lty=2) + 
+  geom_hline(yintercept=.5,lty=4) + 
+  geom_vline(xintercept=0,lty=3) + 
+   geom_smooth(method="loess",span=.5) +
+  xlab("Time (s)") + ylab("Proportion looking at NOVEL Item") + 
+  scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
+  scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
+
+## 1. TRIAL TYPE ANALYSIS (different item effects)
+ms <- aggregate(novelty ~ t.crit.binned + TrialType + level, d, mean)
+qplot(t.crit.binned, novelty,
+      colour=level,
+      geom="point",      
+      data=ms) + 
+  geom_hline(yintercept=.5,lty=2) + 
+  geom_hline(yintercept=.5,lty=4) + 
+  geom_vline(xintercept=0,lty=3) + 
+  geom_smooth(method="loess",span=.5) +
+  facet_wrap(~ TrialType + level) +
+  xlab("Time (s)") + ylab("Proportion looking at NOVEL item") + 
+  scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
+  scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
+
+```
+
+
+
+
+
