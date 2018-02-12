@@ -17,11 +17,11 @@ Pilot analyses for the label-cats (label-categories) experiment, run during late
 ################ PRELIMINARIES #################
 # Directories and helper code
 rm(list = ls())
-setwd("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/")
+setwd("/Users/brialong/Documents/GitHub/label-cats/analyses/")
 
 # Get two sets of codes useful for eyetracking data
-source("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/HelperCode/useful.R")
-source("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/HelperCode/et_helper_bll.R")
+source("/Users/brialong/Documents/GitHub/label-cats/analyses/HelperCode/useful.R")
+source("/Users/brialong/Documents/GitHub/label-cats/analyses/HelperCode/et_helper_bll.R")
 
 ## Read in pre-processed data stream
 d <- read.csv("processed_data/labelcats-pilot-all.csv")

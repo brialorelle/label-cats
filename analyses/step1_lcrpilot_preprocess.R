@@ -16,8 +16,8 @@ library(plyr)
 ## PRELIMINARIES
 rm(list = ls())
 
-source("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/HelperCode/useful.R")
-source("/Users/brialong/Dropbox (Personal)/Projects-Stanford/labelconcept/Experiments/LabelConcept-Pilot/AnalysisCode/HelperCode/et_helper_bll.R")
+source("/Users/brialong/Documents/GitHub/label-cats/analyses/HelperCode/useful.R")
+source("/Users/brialong/Documents/GitHub/label-cats/analyses/HelperCode/et_helper_bll.R")
 
 #raw.data.path <- "sanitycheck_data/"
 #processed.data.filename <- "labelcats-pilot-sanity.csv"

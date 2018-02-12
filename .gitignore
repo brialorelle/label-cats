@@ -1,5 +1,10 @@
 # mturk
 ./mturk/
+auth.json
+hit_modes.json
+settings.json
+history.csv
+./production-results/
 
 # Compiled source #
 ###################
