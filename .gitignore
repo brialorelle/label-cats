@@ -5,6 +5,7 @@ hit_modes.json
 settings.json
 history.csv
 ./production-results/
+literature/z-tosort/
 
 # Compiled source #
 ###################

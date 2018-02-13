@@ -78,7 +78,6 @@ function shuffle_mult() {
 
 //set up image names'
 imageNames=['key.jpg','chair.jpg','lamp.jpg','coffeecup.jpg','sippycup.jpg','bikeBell.jpg','lemonSqueeze.jpg','holepunch.jpg','holePunchLarge.jpg','iceCubes.jpg','measuringTape.jpg','pencilSharp.jpg','stapler.jpg','tapeCasset.jpg','teddybear.jpg','usbKey.jpg','walkman.jpg','yoyo.jpg']
-
 imageNames=shuffle(imageNames);
 
 var imgArray = new Array();
