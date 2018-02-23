@@ -80,9 +80,6 @@ ggplot(d.pretty, aes(x = factor(imageNameShort), y = mean, col = imageNameShort)
    theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 
-  
-
-
 # 
 ```
 
