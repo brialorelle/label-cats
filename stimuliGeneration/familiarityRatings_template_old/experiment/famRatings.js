@@ -114,7 +114,7 @@ for (i = 0; i < imgArray.length; i++) {
 
 trials.push(childAgeTrial);
 
-var slider = document.getElementById("quality");
+var slider = document.getElementById("familiarity");
 var output = document.getElementById("demo");
 output.innerHTML = slider.value; // Display the default slider value
 
