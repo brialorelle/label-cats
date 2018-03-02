@@ -125,7 +125,9 @@ var experiment = {
 	// The object to be submitted.
 	data: {
         trial_type:[],
-		rating: [],
+		seenObject: [],
+        knowFunction: [],
+        knowObjectLabel: [],
 		imageName: [],
 		ladder: [],
 		age: [],
@@ -151,26 +153,44 @@ var experiment = {
 // LOG RESPONSE
     log_response: function() {
 
-        var response_logged = false;
+    var response_logged_seen = false;
+    var response_logged_label = false;
+    var response_logged_function = false
 
-        // Array of radio buttons
-
-        var radio = document.getElementsByName("judgment");
+    var seenObject = document.getElementsByName("seenObject");
+    var knowObjectLabel = document.getElementsByName("knowObjectLabel");
+    var knowFunction = document.getElementsByName("knowFunction");
     
         // Loop through radio buttons
-        for (i = 0; i < radio.length; i++) {
-         if (radio[i].checked) {
-            experiment.data.rating.push(radio[i].value);
-            response_logged = true;         
+    for (i = 0; i < seenObject.length; i++) {
+         if (seenObject[i].checked) {
+            experiment.data.seenObject.push(seenObject[i].value);
+            response_logged_seen = true;         
+        }
+    }
+
+    for (i = 0; i < knowFunction.length; i++) {
+         if (knowFunction[i].checked) {
+            experiment.data.knowFunction.push(knowFunction[i].value);
+            response_logged_function = true;         
+        }
+    }
+
+    for (i = 0; i < knowObjectLabel.length; i++) {
+         if (knowObjectLabel[i].checked) {
+            experiment.data.knowObjectLabel.push(knowObjectLabel[i].value);
+            response_logged_label = true;         
         }
     }
     
-        if (response_logged) {
+        if (response_logged_label & response_logged_function & response_logged_seen) {
             nextButton_FamRatings.blur();
             
             //  uncheck radio buttons
-            for (i = 0; i < radio.length; i++) {
-                radio[i].checked = false
+            for (i = 0; i < knowObjectLabel.length; i++) {
+                knowObjectLabel[i].checked = false
+                knowFunction[i].checked = false
+                seenObject[i].checked = false
             }
 
             experiment.next();
