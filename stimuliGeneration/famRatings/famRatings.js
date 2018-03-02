@@ -76,49 +76,58 @@ function shuffle_mult() {
 
 // ######################## Configuration settings ############################
 
-//set up image names'
-imageNames=['key.jpg','chair.jpg','lamp.jpg','coffeecup.jpg','sippycup.jpg','bikeBell.jpg','lemonSqueeze.jpg','holepunch.jpg','holePunchLarge.jpg','measuringTape.jpg','pencilSharp.jpg','stapler.jpg','tapeCasset.jpg','teddybear.jpg','usbKey.jpg','walkman.jpg','yoyo.jpg']
+//set up trials from csv
+$(document).ready(function() {
 
-imageNames=shuffle(imageNames);
-
-var imgArray = new Array();
-
-for (i = 0; i < imageNames.length; i++) {
-    imgArray[i] = new Image();
-    imgArray[i].src = ['toNorm/' + imageNames[i]]
-}
-
-var numTrialsExperiment = imgArray.length;
-
-
-//set up uptake experiment slides.
-var trials = [];
-
-for (i = 0; i < imgArray.length; i++) {
-    trial = {
-        thisImageName: imgArray[i].src,
-        slide: "familiarityRatings",
-        behavior: "",
-        trial_number: i+1,
+$.ajax({
+        type: "GET",
+        url: "imageNames.csv",
+        dataType: "text",
+        success: function(data) {
+            results = Papa.parse(data);
+            
+            imgArray = new Array();
+            //set up image names
+            for (i = 0; i < results.data.length; i++) {
+                var imageName= results.data[i][0]; //starts i at 1 to get rid of header
+                imgArray[i] = new Image();
+                imgArray[i].src = ['imagesToNorm/' + imageName ];
+            }                
+               
+        
+    alert(imgArray.length)
+    trials = []
+    numTrialsExperiment = imgArray.length;    
+    for (i = 0; i < numTrialsExperiment; i++) {
+        trial = {
+            thisImageName: imgArray[i].src,
+            slide: "familiarityRatings",
+            behavior: "",
+            trial_number: i+1,
+        }
+        trials.push(trial);
     }
 
-    trials.push(trial);
+    // shuffle actual trials
+    trials=shuffle(trials);
+    alert(trials.length)
+
+    // add age trial
+    childAgeTrial = {
+            thisImageName: "",
+            slide: "children_qs",
+            behavior: "",
+            trial_number: i+1,
+        }
+    // push age trial
+    trials.push(childAgeTrial);
+    alert(trials.length)
+
 }
+}); // ajax 
+}); // document ready
 
-
- childAgeTrial = {
-        thisImageName: "",
-        slide: "children_qs",
-        behavior: "",
-        trial_number: i+1,
-    }
-
-trials.push(childAgeTrial);
-
-
-// Show the instructions slide -- this is what we want subjects to see first.
-showSlide("instructions");
-
+showSlide("instructions"); // Show the instructions slide -- this is what we want subjects to see first.
 // ############################## The main event ##############################
 var experiment = {
 
@@ -138,8 +147,6 @@ var experiment = {
 		race: [],
 		childsAge:[],
 	},
-
-
 
 	// end the experiment
 	end: function() {
@@ -183,7 +190,9 @@ var experiment = {
         }
     }
     
-        if (response_logged_label & response_logged_function & response_logged_seen) {
+    if (response_logged_label & response_logged_function & response_logged_seen) {
+            
+            // blur buttons
             nextButton_FamRatings.blur();
             
             //  uncheck radio buttons
@@ -264,3 +273,4 @@ var experiment = {
 		experiment.end();
 	}
 }
+
