@@ -77,7 +77,7 @@ function shuffle_mult() {
 // ######################## Configuration settings ############################
 
 //set up image names'
-imageNames=['key.jpg','chair.jpg','lamp.jpg','coffeecup.jpg','sippycup.jpg','bikeBell.jpg','lemonSqueeze.jpg','holepunch.jpg','holePunchLarge.jpg','iceCubes.jpg','measuringTape.jpg','pencilSharp.jpg','stapler.jpg','tapeCasset.jpg','teddybear.jpg','usbKey.jpg','walkman.jpg','yoyo.jpg']
+imageNames=['key.jpg','chair.jpg','lamp.jpg','coffeecup.jpg','sippycup.jpg','bikeBell.jpg','lemonSqueeze.jpg','holepunch.jpg','holePunchLarge.jpg','measuringTape.jpg','pencilSharp.jpg','stapler.jpg','tapeCasset.jpg','teddybear.jpg','usbKey.jpg','walkman.jpg','yoyo.jpg']
 
 imageNames=shuffle(imageNames);
 
@@ -85,7 +85,7 @@ var imgArray = new Array();
 
 for (i = 0; i < imageNames.length; i++) {
     imgArray[i] = new Image();
-    imgArray[i].src = ['images/' + imageNames[i]]
+    imgArray[i].src = ['toNorm/' + imageNames[i]]
 }
 
 var numTrialsExperiment = imgArray.length;

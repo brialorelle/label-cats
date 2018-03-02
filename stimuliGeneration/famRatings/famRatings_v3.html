@@ -22,7 +22,7 @@
     <p id='logo-text'>Stanford Language and Cognition Lab</p>
     <br>
     <br>
-    <p align="center"><b>PLEASE ONLY COMPLETE THIS HIT IF YOU HAVE A CHILD BETWEEN THE AGES OF 1-2 YEARS</b></p>
+    <p align="center"><b>PLEASE ONLY COMPLETE THIS HIT IF YOU HAVE/HAVE HAD A CHILD BETWEEN THE AGES OF 1-2 YEARS</b></p>
 <br>
     <button type="button" onclick="this.blur(); experiment.next();">Start</button>
 
@@ -49,20 +49,47 @@
 <div class="slide" id="familiarityRatingsSlide">
   <br>
   <div align="center">
-    <h4>Would your child know what this is?</h4><br>
     <img src="images/toy.png" width=200px height=200px id="imagePlaceholder">
-  </div>
+  
 
-  <!-- Likert radio buttons -->
+  <!-- See -->
   <table align = "center"><tr>
+    <p>Would your child have ever seen this kind of thing before? </p>
     <td align="center">
       <tr>
-        <td><input id ="likert1" type="radio" name="knowObject" value = "0">
+        <td><input id ="likert1" type="radio" name="seenObject" value = "0">
           <label for="likert1">No</label></td>
-        <td><input id ="likert2" type="radio" name="knowObject" value = "1">
+        <td><input id ="likert2" type="radio" name="seenObject" value = "1">
          <label for="likert2">Yes</label></td>
       </tr>
     </table>
+    <br>
+    
+    <!-- Know -->
+    <table align = "center"><tr>
+    <p>Would your child know/have known what this kind of thing is called?</p>
+    <td align="center">
+      <tr>
+        <td><input id ="likert1" type="radio" name="knowObjectLabel" value = "0">
+          <label for="likert1">No</label></td>
+        <td><input id ="likert2" type="radio" name="knowObjectLabel" value = "1">
+         <label for="likert2">Yes</label></td>
+      </tr>
+    </table>
+    <br>
+
+    <!-- Does -->
+    <p>Would your child know/have known what this kind of thing does?</p>
+    <table align = "center"><tr>
+    <td align="center">
+      <tr>
+        <td><input id ="likert1" type="radio" name="knowFunction" value = "0">
+          <label for="likert1">No</label></td>
+        <td><input id ="likert2" type="radio" name="knowFunction" value = "1">
+        <label for="likert1">Yes</label></td>
+      </tr>
+    </table>
+     <br>
 
     <!-- Next button and "please make a response" message -->
     <table align="center"><tr>
