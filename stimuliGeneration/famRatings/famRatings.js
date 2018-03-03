@@ -95,33 +95,30 @@ $.ajax({
             }                
                
         
-    alert(imgArray.length)
     trials = []
     numTrialsExperiment = imgArray.length;    
     for (i = 0; i < numTrialsExperiment; i++) {
         trial = {
             thisImageName: imgArray[i].src,
             slide: "familiarityRatings",
-            behavior: "",
             trial_number: i+1,
         }
         trials.push(trial);
     }
-
+    console.log(trials.length)
+    
     // shuffle actual trials
     trials=shuffle(trials);
-    alert(trials.length)
 
     // add age trial
     childAgeTrial = {
             thisImageName: "",
             slide: "children_qs",
-            behavior: "",
             trial_number: i+1,
         }
     // push age trial
     trials.push(childAgeTrial);
-    alert(trials.length)
+    console.log(trials.length)
 
 }
 }); // ajax 
@@ -160,6 +157,7 @@ var experiment = {
 // LOG RESPONSE
     log_response: function() {
 
+    var testing = true
     var response_logged_seen = false;
     var response_logged_label = false;
     var response_logged_function = false
@@ -190,7 +188,8 @@ var experiment = {
         }
     }
     
-    if (response_logged_label & response_logged_function & response_logged_seen) {
+    if (testing) {
+    // if (response_logged_label & response_logged_function & response_logged_seen) {
             
             // blur buttons
             nextButton_FamRatings.blur();

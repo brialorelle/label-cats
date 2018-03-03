@@ -45,52 +45,36 @@
 </div>
 
 
-<!-- Questionnaire slide 1 - Familiarity Ratings -->
-
-<div class="slide" id="familiarityRatingsSlide">
+<!-- Questionnaire - Familiarity Ratings -->
+<div class="slide" id="familiarityRatingsSlide" align="center">
   <br>
-  <div align="center">
-    <img src="images/toy.png" width=200px height=200px id="imagePlaceholder">
-  
+  <img src="images/toy.png" height=200px id="imagePlaceholder">
+  <h4 colspan="4" >When your child was 1-2 years old...</h4>
 
-  <!-- See -->
-  <table align = "center"><tr>
-    <p>Would your child have ever seen this kind of thing before? </p>
-    <td align="center">
+  <table align = "center", width="400px"><tr>
       <tr>
-        <td><input id ="likert1" type="radio" name="seenObject" value = "0">
+        <td colspan="4" >Did they ever see this kind of thing? </td>
+        <td colspan="1"><input id ="likert1" type="radio" name="seenObject" value = "0">
           <label for="likert1">No</label></td>
-        <td><input id ="likert2" type="radio" name="seenObject" value = "1">
+        <td colspan="1"><input id ="likert2" type="radio" name="seenObject" value = "1">
+         <label for="likert2">Yes</label></td>
+         </tr>
+         <tr>
+        <td colspan="4" >Did they know what this kind of thing was called?</td>
+        <td colspan="1"><input id ="likert1" type="radio" name="knowObjectLabel" value = "0">
+          <label for="likert1">No</label></td>
+        <td colspan="1"><input id ="likert2" type="radio" name="knowObjectLabel" value = "1">
          <label for="likert2">Yes</label></td>
       </tr>
-    </table>
-    <br>
-    
-    <!-- Know -->
-    <table align = "center"><tr>
-    <p>Would your child know/have known what this kind of thing is called?</p>
-    <td align="center">
       <tr>
-        <td><input id ="likert1" type="radio" name="knowObjectLabel" value = "0">
-          <label for="likert1">No</label></td>
-        <td><input id ="likert2" type="radio" name="knowObjectLabel" value = "1">
-         <label for="likert2">Yes</label></td>
-      </tr>
-    </table>
-    <br>
-
-    <!-- Does -->
-    <p>Would your child know/have known what this kind of thing does?</p>
-    <table align = "center"><tr>
-    <td align="center">
-      <tr>
-        <td><input id ="likert1" type="radio" name="knowFunction" value = "0">
+      <td colspan="4" >Did they know what this kind of thing does?</td>
+              <td><input id ="likert1" type="radio" name="knowFunction" value = "0">
           <label for="likert1">No</label></td>
         <td><input id ="likert2" type="radio" name="knowFunction" value = "1">
-        <label for="likert1">Yes</label></td>
+         <label for="likert2">Yes</label></td>
       </tr>
     </table>
-     <br>
+    <br>
 
     <!-- Next button and "please make a response" message -->
     <table align="center"><tr>
@@ -101,20 +85,18 @@
         <div id="testMessage_att"> </div>
       </td></tr>
     </table>
+
 </div>
 
 
-
 <!-- Children slide -->
-  <div class="slide" id="children_qs" align="center">
-
-  <br>
-
+<div class="slide" id="children_qs" align="center">
+    <br>
     <p class="block-text">We want to make sure we have accurate data. Please answer the following question truthfully- you will receive credit regardless of your answer!</p>
 
 
-        <p><b>How old is the child you answered on behalf of? (Note that you will receive credit regardless of your answer)</b></p>
-           <p>Please write your answer in months (e.g., 15 months)</p>
+        <p><b>How old is the child NOW that you answered on behalf of? (Note that you will receive credit regardless of your answer)</b></p>
+           <p>Please write your answer in years / months (e.g., 1 year, 2s months)</p>
            <p>
               <input type="text" id="childsAge" form="demographics" name="childsAge" style="width:20%" value="">
              </textarea>
@@ -126,21 +108,17 @@
         </textarea>
       </p> 
 
-
     <table align="center">
       <tr>
         <td align="center">
           <button type="button" onClick="this.blur(); experiment.next()"> Continue</button>
         </td>
-        <tr>
+      <tr>
           <td align="center">
-
           </td>
-        </tr>
-
+      </tr>
     </table>
   </div>
-  <!-- End reading instructions slide -->
 
 
   <!-- The debriefing slide. -->
@@ -248,7 +226,6 @@
 
 
     <div>
-
     <div align="center">
       <button type="button" id="debriefsubmit" onClick="experiment.submit_comments()">Submit</button>
     </div>
