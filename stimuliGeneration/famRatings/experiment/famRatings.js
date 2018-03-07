@@ -154,7 +154,7 @@ var experiment = {
 	},
 
 
-// LOG RESPONSEWhen infants hear a novel label for an object, infants may treat this label as a strong social cue that this object is a true example of a category. 
+// LOG RESPONSE
     log_response: function() {
 
     var testing = false

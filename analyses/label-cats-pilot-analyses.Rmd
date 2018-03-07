@@ -61,7 +61,7 @@ na_props <- d %>%
   summarize(samples = length(x), na_prop = sum(is.na(x)) / length(x)) 
 
 # exclude subjects who didn't look at the screen during test trials >75% of the time
-propThres=.9
+propThres=.75
 includedSubs=na_props$subid[na_props$na_prop<propThres & na_props$TrialType=='TestTrial']
 
 d <- d %>%
@@ -146,6 +146,8 @@ d$t.crit.binned <- round(d$t.crit*subsample.hz)/subsample.hz # subsample step
 Make some simple plots based on trial types
 ```{r}
 
+# ms <- aggregate(novelty ~ subid + TrialType, d, mean)
+
 ## 1. TRIAL TYPE ANALYSIS (silence v word learning)
 ms <- aggregate(novelty ~ t.crit.binned + TrialType, d, mean)
 qplot(t.crit.binned, novelty,
@@ -160,6 +162,7 @@ qplot(t.crit.binned, novelty,
   scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
   scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
 
+
 ## 1. TRIAL TYPE ANALYSIS (different item effects)
 ms <- aggregate(novelty ~ t.crit.binned + TrialType + level, d, mean)
 qplot(t.crit.binned, novelty,
@@ -169,7 +172,7 @@ qplot(t.crit.binned, novelty,
   geom_hline(yintercept=.5,lty=2) + 
   geom_hline(yintercept=.5,lty=4) + 
   geom_vline(xintercept=0,lty=3) + 
-  geom_smooth(method="loess",span=.5) +
+  geom_smooth(method="loess",span=1) +
   facet_wrap(~ TrialType + level) +
   xlab("Time (s)") + ylab("Proportion looking at NOVEL item") + 
   scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 

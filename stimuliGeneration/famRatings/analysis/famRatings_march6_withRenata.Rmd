@@ -1,0 +1,83 @@
+---
+title: "analysis_ObjectFamRatings_v4_multiQ"
+author: "Bria Long"
+date: "3/6/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Include libraries
+
+```{r}
+suppressPackageStartupMessages(c("dplyr","langcog","tidyr","ggplot2","lme4"))
+library(dplyr)
+library(ggplot2)
+library(rjson)
+library(stringr)
+library(tidyr)
+library(dplyr)
+library(forcats)
+library(langcog)
+
+```
+
+## load datafiles and put in a data frame
+```{r}
+files <- dir("../production-results/")
+d.raw <- data.frame()
+
+for (f in files) {
+  jf <- paste("../production-results/",f,sep="")
+  jd <- fromJSON(paste(readLines(jf), collapse=""))
+  id <- data.frame(workerid = jd$WorkerId, 
+                   seenObject = as.numeric(jd$answers$data$seenObject)[1:85],
+                   knowFunction = as.numeric(jd$answers$data$knowFunction)[1:85],
+                   knowLabel = as.numeric(jd$answers$data$knowObjectLabel)[1:85],
+                   childsAge = jd$answers$data$childsAge,
+                   imageName = jd$answers$data$imageName)
+  d.raw <- bind_rows(d.raw, id)
+}
+
+# function for shorter filename extraction
+shortFileName <- function(fileName){
+  out=strsplit(as.character(fileName),"/")[[1]][8]
+}
+
+# make shorter iamge names for plots, etc.
+d.raw <- d.raw %>%
+  group_by(imageName) %>%
+  mutate(imageNameShort = shortFileName(imageName))
+```
+
+2. Do some basic preprocessing - filter by unfamiliar objects
+```{r d.pretty}
+# pre-process: get children's age and filter by too young/old
+
+thres=.25
+
+d.unfamiliar <- d.raw %>%
+  group_by(imageNameShort) %>%
+  summarize(avgSeenObject = mean(seenObject), avgKnowLabel = mean(knowLabel), avgKnowFunction =     mean(knowFunction)) %>%
+  mutate(unFamiliar = (avgSeenObject<= thres & avgKnowLabel<=thres  & avgKnowFunction<=thres)) %>%
+  filter(unFamiliar == TRUE) %>% ## only get unfamiliar objects
+  mutate(imageNameShort = fct_reorder(imageNameShort, avgSeenObject)) ## reorders varibles accordinf to #avgSeenObject for plotting
+
+```
+
+3. Quick plot
+```{r}
+ggplot(d.unfamiliar, aes(x = as.factor(imageNameShort), y = avgSeenObject)) + 
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+
+4. Automated selection of objects and output csv with those categories
+```{r}
+write.csv(d.unfamiliar,"UnfamiliarObjects_ForNorming.csv")
+```
+
+
