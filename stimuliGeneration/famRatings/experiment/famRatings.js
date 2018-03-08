@@ -166,31 +166,35 @@ var experiment = {
     var knowObjectLabel = document.getElementsByName("knowObjectLabel");
     var knowFunction = document.getElementsByName("knowFunction");
     
-        // Loop through radio buttons
+   // Loop through radio buttons
     for (i = 0; i < seenObject.length; i++) {
-         if (seenObject[i].checked) {
-            experiment.data.seenObject.push(seenObject[i].value);
-            response_logged_seen = true;         
+         if (seenObject[i].checked) {         
+            response_logged_seen = true; 
+            seenObjectResponse = seenObject[i].value;        
         }
     }
 
     for (i = 0; i < knowFunction.length; i++) {
          if (knowFunction[i].checked) {
-            experiment.data.knowFunction.push(knowFunction[i].value);
-            response_logged_function = true;         
+            response_logged_function = true;   
+            knowFunctionResponse = knowFunction[i].value;      
         }
     }
 
     for (i = 0; i < knowObjectLabel.length; i++) {
          if (knowObjectLabel[i].checked) {
-            experiment.data.knowObjectLabel.push(knowObjectLabel[i].value);
-            response_logged_label = true;         
+            response_logged_label = true;     
+            knowLabelResponse = knowObjectLabel[i].value;    
         }
     }
     
     // if (testing) {
      if (response_logged_label & response_logged_function & response_logged_seen) {
-            
+            // save data here
+             experiment.data.seenObject.push(seenObjectResponse);
+             experiment.data.knowFunction.push(knowFunctionResponse);
+             experiment.data.knowObjectLabel.push(knowLabelResponse);
+
             // blur buttons
             nextButton_FamRatings.blur();
             

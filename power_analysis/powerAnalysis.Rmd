@@ -1,0 +1,68 @@
+---
+title: "PowerAnalysis-LabelConcept"
+author: "Bria Long"
+date: "3/8/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(BayesFactor)
+```
+
+## Extract effect sizes from meta-analysis for conditions and age ranges of interest
+
+```{r}
+effectSizes=as.tibble(read.csv('Label advantage in concept learning.csv')) %>%
+  filter(audio_condition %in% c("noun","silence", "non-linguistic sound")) %>%
+  mutate(mean_age_months > 12) %>%
+  filter(response_mode=="eye-tracking") %>%
+  group_by(audio_condition) %>%
+  summarize(meanEffect = mean(d_calc), sdEffect = sd(d_calc))%>%
+  data.frame
+
+knitr::kable(effectSizes, digits = 3)
+nounsVsTones = effectSizes$meanEffect[2]- effectSizes$meanEffect[1]
+```
+
+The average effect size difference between nouns vs. tones in eye-tracking experiments with infants older than 12 months of age was cohen's d = `r round(nounsVsTones,2)`.
+
+## Simulate w
+
+```{r}
+# Simulation-based bayesian power analysis with prior over ES
+ES_mean_tones <- effectSizes$meanEffect[1]
+ES_sd_tones <- effectSizes$sdEffect[1]
+
+ES_mean_labels <- effectSizes$meanEffect[2]
+ES_sd_labels <- effectSizes$sdEffect[2]
+
+n_sims <- 500
+ns <- c(20,40,60,80,100)
+
+sims <- as.tibble(expand.grid(sim = 1:n_sims, 
+                              n = ns)) %>%
+  mutate(idx = 1:n()) %>%
+  split(.$idx) %>%
+  map_df(function (x) {
+    mu_es_labels <- rnorm(n = 1, mean = ES_mean_labels, sd = ES_sd_labels)
+    mu_es_tones <- rnorm(n = 1, mean = ES_mean_tones, sd = ES_sd_tones)
+    es_diff_sim <- mu_es_labels - mu_es_tones # output simulated diff in effect size - labels vs. tones
+    
+    d1 <- rnorm(n = x$n, mean = mu_es_labels)
+    d2 <- rnorm(n = x$n, mean = mu_es_tones)
+    x$p <- t.test(d1, d2)$p.value
+    x$bf <- extractBF(BayesFactor::ttestBF(d1, d2))$bf
+    x$es_diff_sim <- es_diff_sim
+    return(x)
+  })
+
+sims %>%
+  group_by(n) %>%
+  summarise(power = mean(p < .05), 
+            meanbf = mean(bf > 6) )
+
+
+```
+
