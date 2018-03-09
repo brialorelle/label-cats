@@ -141,7 +141,7 @@ effectSizes_Targeted&lt;- meta %&gt;%
   filter(response_mode==&quot;eye-tracking&quot;) %&gt;%
   group_by(audio_condition) %&gt;%
   summarize(meanEffect = mean(g_calc), sdEffect = sd(d_calc))</code></pre>
-<p>To gain clarity on this complex literature, we conducted a systematic meta-analysis of this literature, including 100 conditions from 16 papers and 1644 infants. We found an overall effect size of Hedges’ g = 0.38. These effect sizes differed considerably based on the auditory stimuli that infant’s heard: nouns elicited consistency greater novelty preferences than non-linguistic tones (noun, Hedges’ g M = 0.44, SD = 0.52; tones, Hedges’ g M = 0.12, SD = 0.44); however, categories learned during silent conditions also generated novelty preferences (silence, Hedges’ g M = 0.57, SD = 0.73.</p>
+<p>To gain clarity on this complex literature, we conducted a systematic meta-analysis of this literature, including 100 conditions from 16 papers and 1644 infants, finding an overall effect size of Hedges’ g = 0.38. These effect sizes differed considerably based on the auditory stimuli that infant’s heard: nouns elicited consistency greater novelty preferences than non-linguistic tones (noun, Hedges’ g M = 0.44, SD = 0.52; tones, Hedges’ g M = 0.12, SD = 0.44); however, categories learned during silent conditions also generated novelty preferences (silence, Hedges’ g M = 0.57, SD = 0.73.</p>
 <pre class="r"><code>knitr::kable(effectSizes_All, digits = 2)</code></pre>
 <table>
 <thead>
@@ -197,21 +197,25 @@ sims &lt;- as.tibble(expand.grid(sim = 1:n_sims,
     x$bf &lt;- extractBF(BayesFactor::ttestBF(d1, d2))$bf
     x$es_diff_sim &lt;- es_diff_sim
     return(x)
-  })
-
-sims %&gt;%
+  })</code></pre>
+<pre><code>## t is large; approximation invoked.
+## t is large; approximation invoked.
+## t is large; approximation invoked.
+## t is large; approximation invoked.
+## t is large; approximation invoked.</code></pre>
+<pre class="r"><code>sims %&gt;%
   group_by(n) %&gt;%
   summarise(power = mean(p &lt; .05), 
             meanbf = mean(bf &gt; 6) )</code></pre>
 <pre><code>## # A tibble: 6 x 3
 ##       n power meanbf
 ##   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
-## 1    20 0.412  0.262
-## 2    40 0.552  0.434
-## 3    60 0.682  0.548
-## 4    70 0.698  0.578
-## 5    80 0.714  0.584
-## 6   100 0.736  0.640</code></pre>
+## 1    20 0.458  0.298
+## 2    40 0.580  0.464
+## 3    60 0.664  0.542
+## 4    70 0.686  0.568
+## 5    80 0.724  0.620
+## 6   100 0.764  0.638</code></pre>
 </div>
 
 
