@@ -75,12 +75,12 @@ and make sure there is data to analyze
 
 ```{r, echo=FALSE}
 # Look at recalibration trials
-qplot(x,y,
-      facets = ~subid,
-      geom="density2d",
-      data=subset(d,TrialType == "Cabliration"),
-      xlim=c(0,1920),
-      ylim=c(0,1080))
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "Calibration"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
 
 # Look at test trials
 qplot(x,y,

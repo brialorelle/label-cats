@@ -127,15 +127,22 @@ $(document).ready(function () {
 
 <div id="extract-effect-sizes-from-meta-analysis-for-conditions-and-age-ranges-of-interest" class="section level2">
 <h2>Extract effect sizes from meta-analysis for conditions and age ranges of interest</h2>
-<pre class="r"><code>effectSizes=as.tibble(read.csv('Label advantage in concept learning.csv')) %&gt;%
+<pre class="r"><code>meta=as.tibble(read.csv('Label advantage in concept learning.csv')) 
+
+effectSizes_All&lt;- meta %&gt;%
+  filter(audio_condition %in% c(&quot;noun&quot;,&quot;silence&quot;, &quot;non-linguistic sound&quot;)) %&gt;%
+  group_by(audio_condition) %&gt;%
+  summarize(meanEffect = mean(g_calc), sdEffect = sd(d_calc))%&gt;%
+  data.frame
+
+effectSizes_Targeted&lt;- meta %&gt;%
   filter(audio_condition %in% c(&quot;noun&quot;,&quot;silence&quot;, &quot;non-linguistic sound&quot;)) %&gt;%
   mutate(mean_age_months &gt; 12) %&gt;%
   filter(response_mode==&quot;eye-tracking&quot;) %&gt;%
   group_by(audio_condition) %&gt;%
-  summarize(meanEffect = mean(d_calc), sdEffect = sd(d_calc))%&gt;%
-  data.frame
-
-knitr::kable(effectSizes, digits = 3)</code></pre>
+  summarize(meanEffect = mean(g_calc), sdEffect = sd(d_calc))</code></pre>
+<p>To gain clarity on this complex literature, we conducted a systematic meta-analysis of this literature, including 100 conditions from 16 papers and 1644 infants. We found an overall effect size of Hedges’ g = 0.38. These effect sizes differed considerably based on the auditory stimuli that infant’s heard: nouns elicited consistency greater novelty preferences than non-linguistic tones (noun, Hedges’ g M = 0.44, SD = 0.52; tones, Hedges’ g M = 0.12, SD = 0.44); however, categories learned during silent conditions also generated novelty preferences (silence, Hedges’ g M = 0.57, SD = 0.73.</p>
+<pre class="r"><code>knitr::kable(effectSizes_All, digits = 2)</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -147,35 +154,33 @@ knitr::kable(effectSizes, digits = 3)</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">non-linguistic sound</td>
-<td align="right">-0.073</td>
-<td align="right">0.355</td>
+<td align="right">0.12</td>
+<td align="right">0.44</td>
 </tr>
 <tr class="even">
 <td align="left">noun</td>
-<td align="right">0.396</td>
-<td align="right">0.517</td>
+<td align="right">0.44</td>
+<td align="right">0.52</td>
 </tr>
 <tr class="odd">
 <td align="left">silence</td>
-<td align="right">0.724</td>
-<td align="right">0.627</td>
+<td align="right">0.57</td>
+<td align="right">0.73</td>
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>nounsVsTones = effectSizes$meanEffect[2]- effectSizes$meanEffect[1]</code></pre>
-<p>The average effect size difference between nouns vs. tones in eye-tracking experiments with infants older than 12 months of age was cohen’s d = 0.47.</p>
 </div>
-<div id="simulate-w" class="section level2">
-<h2>Simulate w</h2>
+<div id="simulate-s" class="section level2">
+<h2>Simulate s</h2>
 <pre class="r"><code># Simulation-based bayesian power analysis with prior over ES
-ES_mean_tones &lt;- effectSizes$meanEffect[1]
-ES_sd_tones &lt;- effectSizes$sdEffect[1]
+ES_mean_tones &lt;- effectSizes_Targeted$meanEffect[1]
+ES_sd_tones &lt;- effectSizes_Targeted$sdEffect[1]
 
-ES_mean_labels &lt;- effectSizes$meanEffect[2]
-ES_sd_labels &lt;- effectSizes$sdEffect[2]
+ES_mean_labels &lt;- effectSizes_Targeted$meanEffect[2]
+ES_sd_labels &lt;- effectSizes_Targeted$sdEffect[2]
 
 n_sims &lt;- 500
-ns &lt;- c(20,40,60,80,100)
+ns &lt;- c(20,40,60,70,80,100)
 
 sims &lt;- as.tibble(expand.grid(sim = 1:n_sims, 
                               n = ns)) %&gt;%
@@ -192,26 +197,21 @@ sims &lt;- as.tibble(expand.grid(sim = 1:n_sims,
     x$bf &lt;- extractBF(BayesFactor::ttestBF(d1, d2))$bf
     x$es_diff_sim &lt;- es_diff_sim
     return(x)
-  })</code></pre>
-<pre><code>## t is large; approximation invoked.
-## t is large; approximation invoked.
-## t is large; approximation invoked.
-## t is large; approximation invoked.
-## t is large; approximation invoked.
-## t is large; approximation invoked.
-## t is large; approximation invoked.</code></pre>
-<pre class="r"><code>sims %&gt;%
+  })
+
+sims %&gt;%
   group_by(n) %&gt;%
   summarise(power = mean(p &lt; .05), 
             meanbf = mean(bf &gt; 6) )</code></pre>
-<pre><code>## # A tibble: 5 x 3
+<pre><code>## # A tibble: 6 x 3
 ##       n power meanbf
 ##   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
-## 1    20 0.486  0.312
-## 2    40 0.630  0.500
-## 3    60 0.672  0.550
-## 4    80 0.700  0.566
-## 5   100 0.744  0.638</code></pre>
+## 1    20 0.412  0.262
+## 2    40 0.552  0.434
+## 3    60 0.682  0.548
+## 4    70 0.698  0.578
+## 5    80 0.714  0.584
+## 6   100 0.736  0.640</code></pre>
 </div>
 
 
