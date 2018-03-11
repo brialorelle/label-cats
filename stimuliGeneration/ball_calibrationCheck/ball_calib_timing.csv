@@ -1,0 +1,6 @@
+end_time.ordinal,end_time.onset,end_time.offset,end_time.code01,start_time.ordinal,start_time.onset,start_time.offset,start_time.code01,
+0,2549,0,"upperleft",0,1085,0,"upperleft",
+1,5100,0,"lowerleft",1,3663,0,"lowerleft",
+2,7582,0,"upperright",2,5576,0,"upperrirght",
+3,10064,0,"bottomright",3,8092,0,"bottomright",
+4,12014,0,"center",4,10608,0,"center",

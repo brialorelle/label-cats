@@ -1,0 +1,23 @@
+<annotation>
+    <folder>key_frames</folder>
+    <filename>bottomright.jpg</filename>
+    <size>
+        <width>720</width>
+        <height>480</height>
+        <depth>3</depth>
+    </size>
+    <segmented>0</segmented>
+    <object>
+        <name>ballCenter</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <occluded>0</occluded>
+        <difficult>0</difficult>
+        <bndbox>
+            <xmin>506</xmin>
+            <ymin>361</ymin>
+            <xmax>517</xmax>
+            <ymax>373</ymax>
+        </bndbox>
+    </object>
+</annotation>

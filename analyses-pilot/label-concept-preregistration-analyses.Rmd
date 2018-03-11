@@ -108,13 +108,15 @@ qplot(x,y,
 ## Recalibration using robust regression
 ```{r}
 ## copied largely from github.com/dyurovsky/refword/loading_helpers/adjust_calibs
-
 CALIB_SACCADE_TIME = .3 # time it should take for infants to saccade to the actual stimulus if they are following perfectly (300ms)
-pts <- read_csv(here::here("analyses-pilot/info/calibPoints_example.csv")) %>% 
-    filter(instance == 1)%>%
-    mutate(startTimeBegin = min (start_time)) %>%  ## csv has different kind of timestamps, converting
-    mutate(start_time = start_time - startTimeBegin + CALIB_SACCADE_TIME,
-           end_time = end_time - startTimeBegin + CALIB_SACCADE_TIME) 
+
+pts <- read_csv(here::here("analyses-pilot/info/ball_calib_timing.csv")) %>% 
+    mutate(start_time = start_time.onset/1000  + CALIB_SACCADE_TIME,
+           end_time = end_time.onset/1000 + CALIB_SACCADE_TIME) %>%
+    mutate(true_x=scale(true_x,scale = (720/1920), center = FALSE)) %>% # orig movie dim / screen dim (x)
+  mutate(true_y=scale(true_y_cartesian,scale =(480/1080), center = FALSE)) %>% # orig movie dim / screen dim (y)
+  mutate(point = end_time.ordinal +1) %>% #make an index of points from 1-5 not 0-4
+  select(point, start_time, end_time, true_x, true_y)
 
 ## get calibration data from first time
 learn_data <- d %>%
@@ -129,8 +131,7 @@ calib_data <- lapply(1:nrow(pts), function (pt) {
     learn_data %>%
       filter(Time >= pts[pt,]$start_time,
              Time <= pts[pt,]$end_time) %>%
-      mutate(point = pts[pt,]$point,
-             instance = pts[pt,]$instance)}) %>%
+      mutate(point = pts[pt,]$point)}) %>%
     bind_rows %>%
     arrange(subid, Time) %>%
     group_by(subid) %>%
@@ -159,22 +160,6 @@ predicted_data <- lapply(subjs, function (s) {
     separate(measure, into = c("measure", "dimension"), sep = "\\_") %>%
     spread(dimension,value)
 
-## plot individual adjusted calibrations for these recalibration trials
-s="102017_pilot1-eye_data Samples.txt"
-subj_data = filter(predicted_data,subid == s)
-ggplot(aes(x = x,y = y,color=interaction(measure,instance)), data = subj_data) +
-      facet_grid(. ~ measure) +
-      geom_point(size = .8) +
-      geom_point(aes(x = true_x, y = true_y), color="black", shape = 3, size = 3)+
-      scale_color_brewer(palette="Set1") +
-      scale_x_continuous(limits=c(0, X_MAX), breaks=seq(0, X_MAX, 500))+
-      scale_y_continuous(limits=c(0, Y_MAX), breaks=seq(0, Y_MAX, 500))+
-      theme_bw() +
-      theme(legend.position = "none", axis.title.x = element_blank(),
-            axis.title.y = element_blank())
-      ggsave(paste0("processed_data/calib_adjust/",
-                  "/",s,".pdf"), width=8, height=4)
-
 ## now apply predictions to entire dataset and get out new x and y
  adjusted_data <- lapply(subjs, function (s) { # for each subject in the dataset
         out_data <- filter(d,subid == s) 
@@ -187,6 +172,30 @@ ggplot(aes(x = x,y = y,color=interaction(measure,instance)), data = subj_data) +
              y = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, y)) %>%
         group_by(subid)  
   
+```
+
+```{r}
+
+## plot individual adjusted calibrations for these recalibration trials
+for (s in subjs){
+  print (s)
+  subj_data <- predicted_data %>%
+    filter(subid == s)
+  
+  ggplot(aes(x = x,y = y,color=interaction(measure)), data = subj_data) +
+      facet_grid(. ~ measure) +
+      geom_point(size = .8) +
+      geom_point(aes(x = true_x, y = true_y), color="black", shape = 3, size = 3)+
+      scale_color_brewer(palette="Set1") +
+      scale_x_continuous(limits=c(0, X_MAX), breaks=seq(0, X_MAX, 500))+
+      scale_y_continuous(limits=c(0, Y_MAX), breaks=seq(0, Y_MAX, 500))+
+      theme_bw() +
+      theme(legend.position = "none", axis.title.x = element_blank(),
+            axis.title.y = element_blank())
+      ggsave(paste0("processed_data/calib_adjust/",
+                  "/",s,".pdf"), width=8, height=4)
+}
+
 ```
 
 ## Rename variables for clarity
@@ -265,7 +274,7 @@ famPrefsByCondbySimbyGroup <- d.cleaned %>%
 
 ## Scale similarity for modeling purposes
 novPrefsByCondbySimbyGroup$SimLevel = scale(novPrefsByCondbySimbyGroup$SimLevel)
-famPrefsByCondbySim$SimLevel = scale(famPrefsByCondbySim$SimLevel)
+famPrefsByCondbySimbyGroup$SimLevel = scale(famPrefsByCondbySimbyGroup$SimLevel)
 ```
 
 ## H3:Similarity gradient in test trials
