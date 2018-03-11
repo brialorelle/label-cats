@@ -18,7 +18,7 @@ library(tidyverse)
 ```{r}
 
 # Directories and helper code
-path="analyses"
+path="analyses-pilot"
 
 ## Read in pre-processed data stream
 d <- read.csv(here::here(path, "processed_data/labelcats-pilot-all.csv"))
@@ -26,8 +26,7 @@ d <- read.csv(here::here(path, "processed_data/labelcats-pilot-all.csv"))
 ## Read in .csv sheet with the SMI names for the stimuli we're going to be looking at
 condOrder <- read.csv(here::here(path,"info/stimInfo.csv"))
 
-# Get two sets of codes useful for eyetracking data
-source(here::here(path,"HelperCode/useful.R"))
+# Get sets of codes useful for importing SMI eyetracking data
 source(here::here(path,"HelperCode/et_helper_bll.R"))
 
 ```
@@ -48,6 +47,7 @@ d <- as.tibble(d) %>%
 d<- d %>%
   inner_join(condOrder)
 ```
+
 ## Exlcusion criterion
 ```{r}
 ## Count how many test trials recorded for each participant 
@@ -110,7 +110,7 @@ qplot(x,y,
 ## copied largely from github.com/dyurovsky/refword/loading_helpers/adjust_calibs
 
 CALIB_SACCADE_TIME = .3 # time it should take for infants to saccade to the actual stimulus if they are following perfectly (300ms)
-pts <- read_csv(here::here("analyses/info/calibPoints_example.csv")) %>% 
+pts <- read_csv(here::here("analyses-pilot/info/calibPoints_example.csv")) %>% 
     filter(instance == 1)%>%
     mutate(startTimeBegin = min (start_time)) %>%  ## csv has different kind of timestamps, converting
     mutate(start_time = start_time - startTimeBegin + CALIB_SACCADE_TIME,
@@ -197,6 +197,7 @@ d.cleaned <- adjusted_data
 ## data$AuditoryCond 
 d.cleaned$AuditoryCond ="Labels"
 d.cleaned$StimGroup = "StimGroup1"
+d.cleaned$SimLevel = d$level
 
 # Rename variables for clarity
 d.cleaned$SimLevelDiscrete = d.cleaned$level
@@ -218,6 +219,7 @@ rois[[1]] <- c(0,200,768,600) # left
 rois[[2]] <- c(1152,200,768,600) # right
 names(rois) <- c("L","R")
 roi.image(rois)
+
 d.cleaned$roi <- roi.check(d.cleaned,rois) # calls helper function to say whether infant was looking at ROI or not
 
 # 3. Code whether infant was looking in each ROI
@@ -226,7 +228,7 @@ d.cleaned <- d.cleaned %>%
   mutate(novelty = as.numeric(novelty))
 
 # see how the distribution of ROIs looks
-qplot(roi,data=d) # mostly looking in one or the other
+qplot(roi,data=d.cleaned) # mostly looking in one or the other
 
 # Rezero trials to onset of stimuli (test trial) or to onset of label (word learning trials)
 d.cleaned <- rezero.trials(d.cleaned ) 
@@ -250,12 +252,12 @@ LabelsNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="Labels"
 
 ## Now break out test trials and word learning trials by similiarty of targets and distracotrs
 ```{r}
-novPrefsByCondbySim <- d.cleaned %>%
+novPrefsByCondbySimbyGroup <- d.cleaned %>%
   filter(TrialType == "TestTrial") %>%
   group_by(Participant,AuditoryCond,SimLevel, StimGroup) %>%
   dplyr::summarise(meanNovelty = mean(novelty, na.rm=TRUE))
 
-famPrefsByCondbySim <- d.cleaned %>%
+famPrefsByCondbySimbyGroup <- d.cleaned %>%
   mutate(familiarity = 1 - novelty) %>%
   filter(TrialType == "WordLearn") %>%
   group_by(Participant,AuditoryCond,SimLevel,StimGroup) %>%
@@ -275,7 +277,7 @@ MaximalModel_TestTrials <- brm(meanNovelty ~ AuditoryCond * SimLevel + (1 + Audi
 ## H4: Similarity gradient in word learning trials
 ```{r}
 ## H4
-MaximalModel_WordLearn <- brm(meanFamiliarity ~ AuditoryCond * SimLevel + (1 + AuditoryCond*SimLevel | Participant) + (1 + AuditoryCond*SimLevel | famPrefsByCondbySim))
+MaximalModel_WordLearn <- brm(meanFamiliarity ~ AuditoryCond * SimLevel + (1 + AuditoryCond*SimLevel | Participant) + (1 + AuditoryCond*SimLevel | famPrefsByCondbySimbyGroup), data = famPrefsByCondbySimbyGroup)
 
 ```
 
@@ -304,7 +306,7 @@ qplot(t.crit.binned, novelty,
 ## 1. Time courses: Trial Type  (test trial, word learning) x Auditory Cond (labels, tones, music) x Similarity (discretized)
 ms <- aggregate(novelty ~ t.crit.binned + TrialType + SimLevelDiscrete + AuditoryCond, d.cleaned, mean)
 qplot(t.crit.binned, novelty,
-      colour=level,
+      colour=SimLevelDiscrete,
       geom="point",      
       data=ms) + 
   geom_hline(yintercept=.5,lty=2) + 
