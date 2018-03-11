@@ -9,10 +9,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(BayesFactor)
+library(BFDA)
 ```
 
 ## Extract effect sizes from meta-analysis for conditions and age ranges of interest
-
 ```{r}
 meta=as.tibble(read.csv('Label advantage in concept learning.csv')) 
 
@@ -27,48 +27,35 @@ effectSizes_Targeted<- meta %>%
   mutate(mean_age_months > 12) %>%
   filter(response_mode=="eye-tracking") %>%
   group_by(audio_condition) %>%
-  summarize(meanEffect = mean(g_calc), sdEffect = sd(d_calc))
+  summarize(meanEffect_Targeted = mean(g_calc),sdEffect_Targeted = sd(g_calc))
 ```
 To gain clarity on this complex literature, we conducted a systematic meta-analysis of this literature, including `r length(meta$study_ID)` conditions from `r length(unique(meta$study_ID))` papers and `r sum(meta$n)` infants, finding an overall effect size of Hedges’ g = `r round(mean(meta$g_calc),2)`. These effect sizes differed considerably based on the auditory stimuli that infant's heard: nouns elicited consistency greater novelty preferences than non-linguistic tones (noun, Hedges' g M = `r round(effectSizes_All$meanEffect[2],2)`, SD = `r round(effectSizes_All$sdEffect[2],2)`; tones, Hedges' g M = `r round(effectSizes_All$meanEffect[1],2)`, SD = `r round(effectSizes_All$sdEffect[1],2)`); however, categories learned during silent conditions also generated novelty preferences (silence, Hedges' g M = `r round(effectSizes_All$meanEffect[3],2)`, SD = `r round(effectSizes_All$sdEffect[3],2)`.
 
 ```{r}
 knitr::kable(effectSizes_All, digits = 2)
+knitr::kable(effectSizes_All, digits = 2)
 ```
 
 
-## Simulate s
+
 ```{r}
-# Simulation-based bayesian power analysis with prior over ES
-ES_mean_tones <- effectSizes_Targeted$meanEffect[1]
-ES_sd_tones <- effectSizes_Targeted$sdEffect[1]
+## parameters for both simulations and analyses
+boundaryBF = 10
 
-ES_mean_labels <- effectSizes_Targeted$meanEffect[2]
-ES_sd_labels <- effectSizes_Targeted$sdEffect[2]
+n.min = 20
+n.max = 80
+stepsize = 10
 
-n_sims <- 500
-ns <- c(20,40,60,70,80,100)
+## H1: Difference between labels and tones is as predicted by meta-analysis
+LabelsVTones = effectSizes_Targeted$meanEffect_Targeted[2]-effectSizes_Targeted$meanEffect_Targeted[1]
+s1 <- BFDA.sim(expected.ES=LabelsVTones, n.min=n.min, stepsize=stepsize, n.max=n.max, type="t.between", design="sequential", r=sqrt(2)/2, alternative="directional", cores=4, boundary=boundaryBF)
+a1 <- BFDA.analyze(s1, design="sequential", n.min=n.min, boundary=boundaryBF)
+plot(s1)
 
-sims <- as.tibble(expand.grid(sim = 1:n_sims, 
-                              n = ns)) %>%
-  mutate(idx = 1:n()) %>%
-  split(.$idx) %>%
-  map_df(function (x) {
-    mu_es_labels <- rnorm(n = 1, mean = ES_mean_labels, sd = ES_sd_labels)
-    mu_es_tones <- rnorm(n = 1, mean = ES_mean_tones, sd = ES_sd_tones)
-    es_diff_sim <- mu_es_labels - mu_es_tones # output simulated diff in effect size - labels vs. tones
-    
-    d1 <- rnorm(n = x$n, mean = mu_es_labels)
-    d2 <- rnorm(n = x$n, mean = mu_es_tones)
-    x$p <- t.test(d1, d2)$p.value
-    x$bf <- extractBF(BayesFactor::ttestBF(d1, d2))$bf
-    x$es_diff_sim <- es_diff_sim
-    return(x)
-  })
-
-sims %>%
-  group_by(n) %>%
-  summarise(power = mean(p < .05), 
-            meanbf = mean(bf > 6) )
+## Null hypothesis: no difference between labels and tones
+s0 <- BFDA.sim(expected.ES=0, n.min=n.min, stepsize=stepsize, n.max=n.max, type="t.between", design="sequential", r=sqrt(2)/2, alternative="directional", cores=4,boundary=boundaryBF)
+a0 <- BFDA.analyze(s0, design="sequential", n.min=n.min, boundary=boundaryBF)
+plot(s0)
 
 
 ```
