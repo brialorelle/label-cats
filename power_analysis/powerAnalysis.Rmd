@@ -16,24 +16,26 @@ library(BFDA)
 ```{r}
 meta=as.tibble(read.csv('Label advantage in concept learning.csv')) 
 
+# reported in abstract, across all conditions and ages
 effectSizes_All<- meta %>%
   filter(audio_condition %in% c("noun","silence", "non-linguistic sound")) %>%
   group_by(audio_condition) %>%
-  summarize(meanEffect = mean(g_calc), sdEffect = sd(d_calc))%>%
-  data.frame
+  summarize(meanEffect = mean(g_calc), sdEffect = sd(d_calc), countStudies = length(g_calc))
 
+# used for power analysis -- target
 effectSizes_Targeted<- meta %>%
   filter(audio_condition %in% c("noun","silence", "non-linguistic sound")) %>%
-  mutate(mean_age_months > 12) %>%
+  filter(mean_age_months >= 11) %>%
+  filter(mean_age_months <= 17) %>%
   filter(response_mode=="eye-tracking") %>%
   group_by(audio_condition) %>%
-  summarize(meanEffect_Targeted = mean(g_calc),sdEffect_Targeted = sd(g_calc))
+  summarize(meanEffect_Targeted = mean(g_calc),sdEffect_Targeted = sd(g_calc), countStudies = length(g_calc))
 ```
 To gain clarity on this complex literature, we conducted a systematic meta-analysis of this literature, including `r length(meta$study_ID)` conditions from `r length(unique(meta$study_ID))` papers and `r sum(meta$n)` infants, finding an overall effect size of Hedges’ g = `r round(mean(meta$g_calc),2)`. These effect sizes differed considerably based on the auditory stimuli that infant's heard: nouns elicited consistency greater novelty preferences than non-linguistic tones (noun, Hedges' g M = `r round(effectSizes_All$meanEffect[2],2)`, SD = `r round(effectSizes_All$sdEffect[2],2)`; tones, Hedges' g M = `r round(effectSizes_All$meanEffect[1],2)`, SD = `r round(effectSizes_All$sdEffect[1],2)`); however, categories learned during silent conditions also generated novelty preferences (silence, Hedges' g M = `r round(effectSizes_All$meanEffect[3],2)`, SD = `r round(effectSizes_All$sdEffect[3],2)`.
 
 ```{r}
 knitr::kable(effectSizes_All, digits = 2)
-knitr::kable(effectSizes_All, digits = 2)
+knitr::kable(effectSizes_Targeted, digits = 2)
 ```
 
 
@@ -41,10 +43,9 @@ knitr::kable(effectSizes_All, digits = 2)
 ```{r}
 ## parameters for both simulations and analyses
 boundaryBF = 10
-
 n.min = 20
-n.max = 80
-stepsize = 10
+n.max = 50
+stepsize = 5
 
 ## H1: Difference between labels and tones is as predicted by meta-analysis
 LabelsVTones = effectSizes_Targeted$meanEffect_Targeted[2]-effectSizes_Targeted$meanEffect_Targeted[1]
