@@ -74,7 +74,11 @@ subsToInclude <- trialsToInclude %>%
   filter(TrialType == "TestTrial") %>%
   mutate(includeSub = countTrials > 1) %>% # At least 2/3 test trials
   filter(includeSub == TRUE)
-                   
+
+## filter trials data to include include na_prop <.50
+trialsToInclude <- trialsToInclude %>%
+  filter(TrialType=="Calibration" || includeTrial == TRUE)
+
 # Now filter dataset
 d <- d %>%
   filter(is.element(subid,subsToInclude$subid)) %>% # only include participants wtih enough data
@@ -84,7 +88,7 @@ d <- d %>%
 unique(d$subid)
 ```
 Sanity check: let's make density plots for calibration and test trials for these included subjects,
-and make sure there is data to analyze
+and make sure there is data to analyze!
 
 ```{r, echo=FALSE}
 # Look at recalibration trials
@@ -121,7 +125,6 @@ pts <- read_csv(here::here("analyses-pilot/info/ball_calib_timing.csv")) %>%
 ## get calibration data from first time
 learn_data <- d %>%
   filter(TrialType == "Calibration") %>%
-  filter(t < 100) %>% ## Only get first recalibration stimulus -- will have diff names in final version.
   group_by(subid) %>%
   mutate(Time = t.stim - min(t.stim))  %>%
   filter(!is.na(y) & !is.na(x))
@@ -173,7 +176,7 @@ predicted_data <- lapply(subjs, function (s) {
         group_by(subid)  
   
 ```
-
+## Plot individually adjusted calibration trials for each subject
 ```{r}
 
 ## plot individual adjusted calibrations for these recalibration trials
