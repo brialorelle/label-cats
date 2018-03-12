@@ -1,0 +1,336 @@
+---
+title: "Label concept pre-registration script""
+author: "Bria Long"
+date: "3/7/2018"
+output: html_document
+---
+# Load libraries
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(BayesFactor)
+library(brms)
+library(MASS)
+library(tidyverse)
+```
+
+## Load preprocesed data, helper files
+```{r}
+
+# Directories and helper code
+path="analyses-prereg"
+
+# read in simulated data
+d <- read.csv(here::here(path, "SimulatedData.csv"))
+d$subid = as.factor(d$subidSim)
+
+## Read in .csv sheet with the SMI names for the stimuli we're going to be looking at
+condOrder <- read.csv(here::here(path,"info/stimInfo.csv"))
+
+# Get sets of codes useful for importing SMI eyetracking data
+source(here::here(path,"HelperCode/et_helper_bll.R"))
+
+```
+
+## Basic preprocessing: eliminate missing data points and join condition orders
+```{r}
+## Eliminate data points where the eye-tracked failed to get accurate gaze
+# 1. only get data where L/R eyes are valid
+# 2. then, make those x and y's that fell on (0, 1080) as weird default be treated as NA's.
+X_MAX=1920
+Y_MAX=1080
+d <- as.tibble(d) %>%
+  mutate(x = replace(x, LeyeValid==0 | d$ReyeValid==0,NA), y = replace(y, LeyeValid==0 | d$ReyeValid==0,NA)) %>% 
+  mutate(x = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, x),
+        y = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, y)) 
+
+## Join condition info with eye-tracking info
+d<- d %>%
+  inner_join(condOrder)
+```
+
+## Exlcusion criterion
+```{r}
+## Count how many test trials recorded for each participant 
+testTrialCount <- d %>%
+  group_by(subid, TrialType) %>%
+  filter(TrialType =="TestTrial") %>%
+  dplyr::summarise(testTrialCount = length(unique(stimulus)))
+
+# Count what proportion of the time kids were looking at test trials, compute include trial index
+trialsToInclude <- d %>%
+  filter(TrialType %in% c("TestTrial","WordLearn","Calibration")) %>%
+  group_by(subid, StimName,TrialType) %>%
+  dplyr::summarise(samples = length(x), na_prop = sum(is.na(x)) / length(x)) %>%
+  mutate(includeTrial = (na_prop)<.5) 
+
+# Only keep subjects who have at least two silent test trials 
+subsToInclude <- trialsToInclude %>%
+  group_by(subid, TrialType) %>%
+  dplyr::summarize(countTrials = sum(includeTrial)) %>%
+  filter(TrialType == "TestTrial") %>%
+  mutate(includeSub = countTrials > 1) %>% # At least 2/3 test trials
+  filter(includeSub == TRUE)
+
+## filter trials data to include include na_prop <.50
+trialsToInclude <- trialsToInclude %>%
+  filter(TrialType=="Calibration" || includeTrial == TRUE)
+
+# Now filter dataset
+d <- d %>%
+  filter(is.element(subid,subsToInclude$subid)) %>% # only include participants wtih enough data
+  inner_join(trialsToInclude, by=c("subid","TrialType","StimName")) ## only include trials with enough data
+
+# check we filtered subjects
+unique(d$subid)
+```
+Sanity check: let's make density plots for calibration and test trials for these included subjects,
+and make sure there is data to analyze!
+
+```{r, echo=FALSE}
+# Look at recalibration trials
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "Calibration"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
+# 
+# # Look at test trials
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "TestTrial"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
+# 
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "WordLearn"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
+
+```
+
+## Recalibration using robust regression
+```{r}
+## copied largely from github.com/dyurovsky/refword/loading_helpers/adjust_calibs
+CALIB_SACCADE_TIME = .3 # time it should take for infants to saccade to the actual stimulus if they are following perfectly (300ms)
+
+pts <- read_csv(here::here("analyses-pilot/info/ball_calib_timing.csv")) %>% 
+    mutate(start_time = start_time.onset/1000  + CALIB_SACCADE_TIME,
+           end_time = end_time.onset/1000 + CALIB_SACCADE_TIME) %>%
+    mutate(true_x=scale(true_x,scale = (720/1920), center = FALSE)) %>% # orig movie dim / screen dim (x)
+    mutate(true_y=scale(true_y_cartesian,scale =(480/1080), center = FALSE)) %>% # orig movie dim / screen dim (y)
+    mutate(point = end_time.ordinal + 1) %>% #make an index of points from 1-5 not 0-4
+    dplyr::select(point, start_time, end_time, true_x, true_y)
+
+## get calibration data from first time
+learn_data <- d %>%
+  filter(TrialType == "Calibration") %>%
+  group_by(subid) %>%
+  mutate(Time = t.stim - min(t.stim))  %>%
+  filter(!is.na(y) & !is.na(x))
+
+## filter calibration data by the timepoints when the ball was in certain locations
+calib_data <- lapply(1:nrow(pts), function (pt) {
+    learn_data %>%
+      filter(Time >= pts[pt,]$start_time,
+             Time <= pts[pt,]$end_time) %>%
+      mutate(point = pts[pt,]$point)}) %>%
+    bind_rows %>%
+    arrange(subid, Time) %>%
+    group_by(subid) %>%
+    left_join(pts) 
+
+## robust regression on true and predicted outcomes
+x_models <- calib_data %>%
+    do(x_model = rlm(true_x ~ x, data = .)) 
+
+y_models <- calib_data %>%
+    do(y_model = rlm(true_y ~ y, data = .))
+
+models <- left_join(x_models,y_models) # bind x and y models
+subjs <- unique(calib_data$subid) # get list of subjects 
+
+## use these robust regressions to predict new values for the recalibraiton trials
+predicted_data <- lapply(subjs, function (s) {
+    models <- filter(models, subid == s)
+    filter(calib_data, subid == s) %>%
+    mutate(predicted_x = predict(models$x_model[[1]]),
+           predicted_y = predict(models$y_model[[1]]))}) %>%
+    bind_rows %>%
+    dplyr::rename(empirical_x = x, empirical_y = y) %>%
+    group_by(subid) %>%
+    gather(measure,value,empirical_x,predicted_x,empirical_y,predicted_y) %>%
+    separate(measure, into = c("measure", "dimension"), sep = "\\_") %>%
+    spread(dimension,value)
+
+## now apply predictions to entire dataset and get out new x and y
+ adjusted_data <- lapply(subjs, function (s) { # for each subject in the dataset
+        out_data <- filter(d,subid == s) 
+        models <- filter(models,subid == s)
+        out_data$x = predict(models$x_model[[1]], newdata = out_data)
+        out_data$y = predict(models$y_model[[1]], newdata = out_data)
+        return(out_data)}) %>%
+        bind_rows %>% # bind it all together
+        mutate(x = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, x),
+             y = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, y)) %>%
+        group_by(subid)  
+  
+```
+## Plot individually adjusted calibration trials for each subject
+```{r}
+
+## plot individual adjusted calibrations for these recalibration trials
+for (s in subjs){
+  print (s)
+  subj_data <- predicted_data %>%
+    filter(subid == s)
+  
+  ggplot(aes(x = x,y = y,color=interaction(measure)), data = subj_data) +
+      facet_grid(. ~ measure) +
+      geom_point(size = .8) +
+      geom_point(aes(x = true_x, y = true_y), color="black", shape = 3, size = 3)+
+      scale_color_brewer(palette="Set1") +
+      scale_x_continuous(limits=c(0, X_MAX), breaks=seq(0, X_MAX, 500))+
+      scale_y_continuous(limits=c(0, Y_MAX), breaks=seq(0, Y_MAX, 500))+
+      theme_bw() +
+      theme(legend.position = "none", axis.title.x = element_blank(),
+            axis.title.y = element_blank())
+      ggsave(paste0("processed_data/calib_adjust/",
+                  "/",s,".pdf"), width=8, height=4)
+}
+
+```
+
+## Rename variables for clarity
+```{r}
+d.cleaned <- adjusted_data
+
+# Rename variables for clarity
+d.cleaned$SimLevelDiscrete = d.cleaned$level
+# d.cleaned$SimLevel = d.cleaned$similarity: will be pearson's correlation values between stimulus categories
+d.cleaned$Participant = d.cleaned$subid
+
+```
+
+## Wrangle data for novelty preferences
+```{r}
+# 1. Filter data for word learning and test trials
+toFilter=c('WordLearn','TestTrial')
+d.cleaned <- d.cleaned %>%
+  filter(is.element(TrialType,toFilter)) 
+
+# 2. Define the target ROIs (regions of interest)
+rois <- list()
+rois[[1]] <- c(0,200,768,600) # left
+rois[[2]] <- c(1152,200,768,600) # right
+names(rois) <- c("L","R")
+roi.image(rois)
+
+d.cleaned$roi <- roi.check(d.cleaned,rois) # calls helper function to say whether infant was looking at ROI or not
+
+# 3. Code whether infant was looking in each ROI
+d.cleaned <- d.cleaned %>%
+  mutate(novelty = ifelse(roi == distPos, "1", "0")) %>%
+  mutate(novelty = as.numeric(novelty))
+
+# see how the distribution of ROIs looks
+qplot(roi,data=d.cleaned) # mostly looking in one or the other
+
+# Rezero trials to onset of stimuli (test trial) or to onset of label (word learning trials)
+d.cleaned <- rezero.trials(d.cleaned ) 
+```
+
+## H1/H2 Replication tests: Bayes Factor t-tests for Labels vs. Tones and for Labels vs. Silence
+```{r}
+novPrefsByCond <- d.cleaned %>%
+  filter(TrialType == "TestTrial") %>%
+  group_by(Participant,AuditoryCond) %>%
+  dplyr::summarise(meanNovelty = mean(novelty, na.rm=TRUE))
+  
+LabelsNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="labels"]
+TonesNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="tones"]
+MusicNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="music"]
+
+LabelsvTones = BayesFactor::ttestBF(LabelsNovelty, TonesNovelty)
+LabelsvMusic = BayesFactor::ttestBF(LabelsNovelty, MusicNovelty)
+
+extractBF(LabelsvTones)$bf
+extractBF(LabelsvMusic)$bf
+
+```
+
+## Now break out test trials and word learning trials by similiarty of targets and distracotrs
+```{r}
+novPrefsByCondbySimbyGroup <- d.cleaned %>%
+  filter(TrialType == "TestTrial") %>%
+  group_by(Participant,AuditoryCond,SimLevelDiscrete, StimGroup) %>%
+  dplyr::summarise(meanNovelty = mean(novelty, na.rm=TRUE))
+
+famPrefsByCondbySimbyGroup <- d.cleaned %>%
+  mutate(familiarity = 1 - novelty) %>%
+  filter(TrialType == "WordLearn") %>%
+  group_by(Participant,AuditoryCond,SimLevelDiscrete,StimGroup) %>%
+  dplyr::summarise(meanFamiliarity = mean(familiarity, na.rm=TRUE))
+
+```
+
+## H3:Similarity gradient in test trials
+```{r}
+## H3.
+MaximalModel_TestTrials <- brm(meanNovelty ~ AuditoryCond * SimLevelDiscrete + (1 + AuditoryCond*SimLevelDiscrete | Participant) + (1 + AuditoryCond*SimLevelDiscrete | StimGroup), data=novPrefsByCondbySimbyGroup)
+```
+
+## H4: Similarity gradient in word learning trials
+```{r}
+## H4 -- simulated data doesn't include word learning trials
+# MaximalModel_WordLearn <- brm(meanFamiliarity ~ AuditoryCond * SimLevel + (1 + AuditoryCond*SimLevel | Participant) + (1 + AuditoryCond*SimLevel | famPrefsByCondbySimbyGroup), data = famPrefsByCondbySimbyGroup)
+
+```
+
+##  Plot timecourses of looking by conditions
+```{r}
+## subsample the data so that you get smooth curves
+subsample.hz <- 10 # 10 hz is decent, eventually we should set to 30 or 60 hz
+d.cleaned$t.crit.binned <- round(d.cleaned$t.crit*subsample.hz)/subsample.hz # subsample step
+
+## 1. Time courses: Trial Type  (test trial, word learning) x Auditory Cond (labels, tones, music)
+ms <- aggregate(novelty ~ t.crit.binned + TrialType + AuditoryCond, d.cleaned, mean)
+qplot(t.crit.binned, novelty,
+      colour=TrialType,
+      geom="point",      
+      data=ms) + 
+  geom_hline(yintercept=.5,lty=2) + 
+  geom_hline(yintercept=.5,lty=4) + 
+  geom_vline(xintercept=0,lty=3) + 
+   geom_smooth(method="loess",span=.5) +
+   facet_wrap(~ TrialType + AuditoryCond) +
+  xlab("Time (s)") + ylab("Proportion looking at NOVEL Item") + 
+  scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
+  scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
+
+
+## 1. Time courses: Trial Type  (test trial, word learning) x Auditory Cond (labels, tones, music) x Similarity (discretized)
+ms <- aggregate(novelty ~ t.crit.binned + TrialType + SimLevelDiscrete + AuditoryCond, d.cleaned, mean)
+qplot(t.crit.binned, novelty,
+      colour=SimLevelDiscrete,
+      geom="point",      
+      data=ms) + 
+  geom_hline(yintercept=.5,lty=2) + 
+  geom_hline(yintercept=.5,lty=4) + 
+  geom_vline(xintercept=0,lty=3) + 
+  geom_smooth(method="loess",span=1) +
+  facet_wrap(~ TrialType + SimLevelDiscrete + AuditoryCond) +
+  xlab("Time (s)") + ylab("Proportion looking at NOVEL item") + 
+  scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
+  scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
+
+```
+
+
+
+
+

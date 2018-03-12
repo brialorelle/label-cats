@@ -1,0 +1,112 @@
+---
+title: "SimulateDataSet-LabelConcept"
+author: "Bria Long"
+date: "3/12/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+The goal of this document is to simulate a data set for use in the labelconcept pre-registration analysis script.
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(here)
+library(BayesFactor)
+library(brms)
+library(MASS)
+library(tidyverse)
+```
+
+## load pilot data
+```{r pressure, echo=FALSE}
+path="analyses-pilot"
+
+## Read in pre-processed data stream for the pilot data
+d <- read.csv(here::here(path, "processed_data/labelcats-pilot-all.csv"))
+
+## Read in .csv sheet with the SMI names for the stimuli we're going to be looking at
+condOrder <- read.csv(here::here(path,"info/stimInfo.csv"))
+
+# Get sets of codes useful for importing SMI eyetracking data
+source(here::here(path,"HelperCode/et_helper_bll.R"))
+
+
+## Eliminate data points where the eye-tracked failed to get accurate gaze
+# 1. only get data where L/R eyes are valid
+# 2. then, make those x and y's that fell on (0, 1080) as weird default be treated as NA's.
+X_MAX=1920
+Y_MAX=1080
+d <- as.tibble(d) %>%
+  mutate(x = replace(x, LeyeValid==0 | d$ReyeValid==0,NA), y = replace(y, LeyeValid==0 | d$ReyeValid==0,NA)) %>% 
+  mutate(x = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, x),
+        y = ifelse(x <= 0 | x >= X_MAX | y <= 0 | y >= Y_MAX, NA, y)) 
+
+## Join condition info with eye-tracking info
+d<- d %>%
+  inner_join(condOrder)
+
+```
+## Exlcusion criterion
+```{r}
+## Count how many test trials recorded for each participant 
+testTrialCount <- d %>%
+  group_by(subid, TrialType) %>%
+  filter(TrialType =="TestTrial") %>%
+  dplyr::summarise(testTrialCount = length(unique(stimulus)))
+
+# Get rid of subjects who never made it to test trials
+d <- d %>%
+  filter(is.element(subid,testTrialCount$subid))
+
+# Count what proportion of the time kids were looking at test trials, compute include trial index
+trialsToInclude <- d %>%
+  filter(TrialType %in% c("TestTrial","WordLearn","Calibration")) %>%
+  group_by(subid, StimName,TrialType) %>%
+  dplyr::summarise(samples = length(x), na_prop = sum(is.na(x)) / length(x)) %>%
+  mutate(includeTrial = (na_prop)<.5) 
+
+# Only keep subjects who have at least two silent test trials 
+subsToInclude <- trialsToInclude %>%
+  group_by(subid, TrialType) %>%
+  dplyr::summarize(countTrials = sum(includeTrial)) %>%
+  filter(TrialType == "TestTrial") %>%
+  mutate(includeSub = countTrials > 1) %>% # At least 2/3 test trials
+  filter(includeSub == TRUE)
+
+## filter trials data to include include na_prop <.50
+trialsToInclude <- trialsToInclude %>%
+  filter(TrialType=="Calibration" || includeTrial == TRUE)
+
+# Now filter dataset
+d <- d %>%
+  filter(is.element(subid,subsToInclude$subid)) %>% # only include participants wtih enough data
+  inner_join(trialsToInclude) ## only include trials with enough data
+
+# check we filtered subjects
+unique(d$subid)
+```
+
+```{r}
+condStructure = expand.grid(stimGroups = 1:5, auditoryCond=c('labels','tones','music'), repeats = 1:4)
+numSimSubs = dim(condStructure)[1] 
+
+d.simFull = data.frame()
+dSim <- d %>%
+  filter(subid == "102517_pilot3-eye_data Samples.txt")
+
+for (s in 1:numSimSubs){
+  d.simSub = dSim
+  d.simSub$x = jitter(d.simSub$x,100)
+  d.simSub$y = jitter(d.simSub$y,100)
+  d.simSub$subidSim = paste(as.character(d.simSub$subid), "sim", as.character(s))
+  d.simSub$StimGroup <- condStructure$stimGroups[s]
+  d.simSub$AuditoryCond <- condStructure$auditoryCond[s]
+  d.simFull <- bind_rows(d.simFull, d.simSub)
+}
+
+write.csv(d.simFull,"SimulatedData.csv")
+```

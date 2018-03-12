@@ -21,7 +21,10 @@ library(tidyverse)
 path="analyses-pilot"
 
 ## Read in pre-processed data stream
-d <- read.csv(here::here(path, "processed_data/labelcats-pilot-all.csv"))
+# d <- read.csv(here::here(path, "processed_data/labelcats-pilot-all.csv"))
+
+d <- read.csv(here::here(path, "processed_data/SimulatedData.csv"))
+d$subid = as.factor(d$subidSim)
 
 ## Read in .csv sheet with the SMI names for the stimuli we're going to be looking at
 condOrder <- read.csv(here::here(path,"info/stimInfo.csv"))
@@ -56,10 +59,6 @@ testTrialCount <- d %>%
   filter(TrialType =="TestTrial") %>%
   dplyr::summarise(testTrialCount = length(unique(stimulus)))
 
-# Get rid of subjects who never made it to test trials
-d <- d %>%
-  filter(is.element(subid,testTrialCount$subid))
-
 # Count what proportion of the time kids were looking at test trials, compute include trial index
 trialsToInclude <- d %>%
   filter(TrialType %in% c("TestTrial","WordLearn","Calibration")) %>%
@@ -82,7 +81,7 @@ trialsToInclude <- trialsToInclude %>%
 # Now filter dataset
 d <- d %>%
   filter(is.element(subid,subsToInclude$subid)) %>% # only include participants wtih enough data
-  inner_join(trialsToInclude) ## only include trials with enough data
+  inner_join(trialsToInclude, by=c("subid","TrialType","StimName")) ## only include trials with enough data
 
 # check we filtered subjects
 unique(d$subid)
@@ -92,20 +91,27 @@ and make sure there is data to analyze!
 
 ```{r, echo=FALSE}
 # Look at recalibration trials
-qplot(x,y,
-      facets = ~subid,
-      geom="density2d",
-      data=subset(d,TrialType == "Calibration"),
-      xlim=c(0,1920),
-      ylim=c(0,1080))
-
-# Look at test trials
-qplot(x,y,
-      facets = ~subid,
-      geom="density2d",
-      data=subset(d,TrialType == "TestTrial"),
-      xlim=c(0,1920),
-      ylim=c(0,1080))
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "Calibration"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
+# 
+# # Look at test trials
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "TestTrial"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
+# 
+# qplot(x,y,
+#       facets = ~subid,
+#       geom="density2d",
+#       data=subset(d,TrialType == "WordLearn"),
+#       xlim=c(0,1920),
+#       ylim=c(0,1080))
 
 ```
 
@@ -118,9 +124,9 @@ pts <- read_csv(here::here("analyses-pilot/info/ball_calib_timing.csv")) %>%
     mutate(start_time = start_time.onset/1000  + CALIB_SACCADE_TIME,
            end_time = end_time.onset/1000 + CALIB_SACCADE_TIME) %>%
     mutate(true_x=scale(true_x,scale = (720/1920), center = FALSE)) %>% # orig movie dim / screen dim (x)
-  mutate(true_y=scale(true_y_cartesian,scale =(480/1080), center = FALSE)) %>% # orig movie dim / screen dim (y)
-  mutate(point = end_time.ordinal +1) %>% #make an index of points from 1-5 not 0-4
-  select(point, start_time, end_time, true_x, true_y)
+    mutate(true_y=scale(true_y_cartesian,scale =(480/1080), center = FALSE)) %>% # orig movie dim / screen dim (y)
+    mutate(point = end_time.ordinal + 1) %>% #make an index of points from 1-5 not 0-4
+    dplyr::select(point, start_time, end_time, true_x, true_y)
 
 ## get calibration data from first time
 learn_data <- d %>%
