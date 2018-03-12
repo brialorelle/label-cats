@@ -60,7 +60,7 @@ thres=.25
 
 d.unfamiliar <- d.raw %>%
   group_by(imageNameShort) %>%
-  summarize(avgSeenObject = mean(seenObject), avgKnowLabel = mean(knowLabel), avgKnowFunction =     mean(knowFunction)) %>%
+  summarize(avgSeenObject = mean(seenObject), avgKnowLabel = mean(knowLabel), avgKnowFunction = mean(knowFunction)) %>%
   mutate(unFamiliar = (avgSeenObject<= thres & avgKnowLabel<=thres  & avgKnowFunction<=thres)) %>%
   filter(unFamiliar == TRUE) %>% ## only get unfamiliar objects
   mutate(imageNameShort = fct_reorder(imageNameShort, avgSeenObject)) ## reorders varibles accordinf to #avgSeenObject for plotting
