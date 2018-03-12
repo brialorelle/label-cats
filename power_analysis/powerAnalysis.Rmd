@@ -40,6 +40,7 @@ knitr::kable(effectSizes_Targeted, digits = 2)
 
 
 
+
 ```{r}
 ## parameters for both simulations and analyses
 boundaryBF = 10
@@ -58,6 +59,30 @@ s0 <- BFDA.sim(expected.ES=0, n.min=n.min, stepsize=stepsize, n.max=n.max, type=
 a0 <- BFDA.analyze(s0, design="sequential", n.min=n.min, boundary=boundaryBF)
 plot(s0)
 
-
 ```
 
+
+## NOT INCLUDED: Considered trying to incoporate variability estimates into effect size simulations via extra simualtions, but did not given that the sd estimates for tones are from a very small N in this age range 
+```{r}
+ES_mean_tones <- effectSizes_Targeted$meanEffect_Targeted[1]
+ES_sd_tones <- effectSizes_Targeted$sdEffect_Targeted[1]
+
+ES_mean_labels <- effectSizes_Targeted$meanEffect_Targeted[2]
+ES_sd_labels <- effectSizes_Targeted$sdEffect_Targeted[2]
+
+n_sims <- 500
+sims <- as.tibble(expand.grid(sim = 1:n_sims)) %>%
+  mutate(idx = 1:n()) %>%
+  split(.$idx) %>%
+  map_df(function (x) {
+    mu_es_labels <- rnorm(n = 1, mean = ES_mean_labels, sd = ES_sd_labels) # simulate an effect size for labels from this   distribution
+    mu_es_tones <- rnorm(n = 1, mean = ES_mean_tones, sd = ES_sd_tones) # simulate an effect size for tones
+    es_diff_sim <- mu_es_labels - mu_es_tones # output simulated diff in effect size - labels vs. tones
+    x$es_diff_sim = es_diff_sim
+    return (x)
+  })
+
+ES_diff_estimate_mean = mean(sims$es_diff_sim)
+ES_diff_estimate_sd = sd(sims$es_diff_sim)
+
+```
