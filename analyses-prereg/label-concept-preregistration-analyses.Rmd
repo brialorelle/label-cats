@@ -16,7 +16,6 @@ library(tidyverse)
 
 ## Load preprocesed data, helper files
 ```{r}
-
 # Directories and helper code
 path="analyses-prereg"
 
@@ -59,7 +58,7 @@ testTrialCount <- d %>%
 
 # Count what proportion of the time kids were looking at test trials, compute include trial index
 trialsToInclude <- d %>%
-  filter(TrialType %in% c("TestTrial","WordLearn","Calibration")) %>%
+  filter(TrialType %in% c("TestTrial","WordLearn","Calibration","Familiarization")) %>%
   group_by(subid, StimName,TrialType) %>%
   dplyr::summarise(samples = length(x), na_prop = sum(is.na(x)) / length(x)) %>%
   mutate(includeTrial = (na_prop)<.5) 
@@ -72,50 +71,34 @@ subsToInclude <- trialsToInclude %>%
   mutate(includeSub = countTrials > 1) %>% # At least 2/3 test trials
   filter(includeSub == TRUE)
 
-## filter trials data to include include na_prop <.50
+# Don't have familiarization data in simulated dataset
+# subsToInclude_FamOK <- trialsToInclude %>%
+#   filter(TrialType=="Familiarization") %>%
+#   group_by(subid) %>%
+#   mutate(sawFamStimuli = (na_prop)<.75) %>%
+#   filter(sawFamStimuli == FALSE)
+    
+## Filter trials data to include include na_prop <.50
 trialsToInclude <- trialsToInclude %>%
   filter(TrialType=="Calibration" || includeTrial == TRUE)
 
-# Now filter dataset
+# Now filter entire dataset
 d <- d %>%
   filter(is.element(subid,subsToInclude$subid)) %>% # only include participants wtih enough data
+  # filter(is.element(subid,subsToInclude_FamOK$subid)) %>% # only include participants who saw fam trials
   inner_join(trialsToInclude, by=c("subid","TrialType","StimName")) ## only include trials with enough data
 
-# check we filtered subjects
-unique(d$subid)
-```
-Sanity check: let's make density plots for calibration and test trials for these included subjects,
-and make sure there is data to analyze!
+# Check how many subjects we have in each condition
+countSubjects <- d %>%
+  group_by(AuditoryCond, StimGroup) %>%
+  summarize(numSubjects = length(unique(subid)))
 
-```{r, echo=FALSE}
-# Look at recalibration trials
-# qplot(x,y,
-#       facets = ~subid,
-#       geom="density2d",
-#       data=subset(d,TrialType == "Calibration"),
-#       xlim=c(0,1920),
-#       ylim=c(0,1080))
-# 
-# # Look at test trials
-# qplot(x,y,
-#       facets = ~subid,
-#       geom="density2d",
-#       data=subset(d,TrialType == "TestTrial"),
-#       xlim=c(0,1920),
-#       ylim=c(0,1080))
-# 
-# qplot(x,y,
-#       facets = ~subid,
-#       geom="density2d",
-#       data=subset(d,TrialType == "WordLearn"),
-#       xlim=c(0,1920),
-#       ylim=c(0,1080))
 
 ```
 
 ## Recalibration using robust regression
 ```{r}
-## copied largely from github.com/dyurovsky/refword/loading_helpers/adjust_calibs
+
 CALIB_SACCADE_TIME = .3 # time it should take for infants to saccade to the actual stimulus if they are following perfectly (300ms)
 
 pts <- read_csv(here::here("analyses-pilot/info/ball_calib_timing.csv")) %>% 
@@ -183,25 +166,25 @@ predicted_data <- lapply(subjs, function (s) {
 ## Plot individually adjusted calibration trials for each subject
 ```{r}
 
-## plot individual adjusted calibrations for these recalibration trials
-for (s in subjs){
-  print (s)
-  subj_data <- predicted_data %>%
-    filter(subid == s)
-  
-  ggplot(aes(x = x,y = y,color=interaction(measure)), data = subj_data) +
-      facet_grid(. ~ measure) +
-      geom_point(size = .8) +
-      geom_point(aes(x = true_x, y = true_y), color="black", shape = 3, size = 3)+
-      scale_color_brewer(palette="Set1") +
-      scale_x_continuous(limits=c(0, X_MAX), breaks=seq(0, X_MAX, 500))+
-      scale_y_continuous(limits=c(0, Y_MAX), breaks=seq(0, Y_MAX, 500))+
-      theme_bw() +
-      theme(legend.position = "none", axis.title.x = element_blank(),
-            axis.title.y = element_blank())
-      ggsave(paste0("processed_data/calib_adjust/",
-                  "/",s,".pdf"), width=8, height=4)
-}
+# ## plot individual adjusted calibrations for these recalibration trials
+# for (s in subjs){
+#   print (s)
+#   subj_data <- predicted_data %>%
+#     filter(subid == s)
+#   
+#   ggplot(aes(x = x,y = y,color=interaction(measure)), data = subj_data) +
+#       facet_grid(. ~ measure) +
+#       geom_point(size = .8) +
+#       geom_point(aes(x = true_x, y = true_y), color="black", shape = 3, size = 3)+
+#       scale_color_brewer(palette="Set1") +
+#       scale_x_continuous(limits=c(0, X_MAX), breaks=seq(0, X_MAX, 500))+
+#       scale_y_continuous(limits=c(0, Y_MAX), breaks=seq(0, Y_MAX, 500))+
+#       theme_bw() +
+#       theme(legend.position = "none", axis.title.x = element_blank(),
+#             axis.title.y = element_blank())
+#       ggsave(paste0("processed_data/calib_adjust/",
+#                   "/",s,".pdf"), width=8, height=4)
+# }
 
 ```
 
@@ -211,7 +194,6 @@ d.cleaned <- adjusted_data
 
 # Rename variables for clarity
 d.cleaned$SimLevelDiscrete = d.cleaned$level
-# d.cleaned$SimLevel = d.cleaned$similarity: will be pearson's correlation values between stimulus categories
 d.cleaned$Participant = d.cleaned$subid
 
 ```
@@ -290,47 +272,3 @@ MaximalModel_TestTrials <- brm(meanNovelty ~ AuditoryCond * SimLevelDiscrete + (
 # MaximalModel_WordLearn <- brm(meanFamiliarity ~ AuditoryCond * SimLevel + (1 + AuditoryCond*SimLevel | Participant) + (1 + AuditoryCond*SimLevel | famPrefsByCondbySimbyGroup), data = famPrefsByCondbySimbyGroup)
 
 ```
-
-##  Plot timecourses of looking by conditions
-```{r}
-## subsample the data so that you get smooth curves
-subsample.hz <- 10 # 10 hz is decent, eventually we should set to 30 or 60 hz
-d.cleaned$t.crit.binned <- round(d.cleaned$t.crit*subsample.hz)/subsample.hz # subsample step
-
-## 1. Time courses: Trial Type  (test trial, word learning) x Auditory Cond (labels, tones, music)
-ms <- aggregate(novelty ~ t.crit.binned + TrialType + AuditoryCond, d.cleaned, mean)
-qplot(t.crit.binned, novelty,
-      colour=TrialType,
-      geom="point",      
-      data=ms) + 
-  geom_hline(yintercept=.5,lty=2) + 
-  geom_hline(yintercept=.5,lty=4) + 
-  geom_vline(xintercept=0,lty=3) + 
-   geom_smooth(method="loess",span=.5) +
-   facet_wrap(~ TrialType + AuditoryCond) +
-  xlab("Time (s)") + ylab("Proportion looking at NOVEL Item") + 
-  scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
-  scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
-
-
-## 1. Time courses: Trial Type  (test trial, word learning) x Auditory Cond (labels, tones, music) x Similarity (discretized)
-ms <- aggregate(novelty ~ t.crit.binned + TrialType + SimLevelDiscrete + AuditoryCond, d.cleaned, mean)
-qplot(t.crit.binned, novelty,
-      colour=SimLevelDiscrete,
-      geom="point",      
-      data=ms) + 
-  geom_hline(yintercept=.5,lty=2) + 
-  geom_hline(yintercept=.5,lty=4) + 
-  geom_vline(xintercept=0,lty=3) + 
-  geom_smooth(method="loess",span=1) +
-  facet_wrap(~ TrialType + SimLevelDiscrete + AuditoryCond) +
-  xlab("Time (s)") + ylab("Proportion looking at NOVEL item") + 
-  scale_x_continuous(limits=c(-1,10),expand = c(0,0)) + 
-  scale_y_continuous(limits=c(0,1),expand = c(0,0)) # make the axes start at 0
-
-```
-
-
-
-
-
