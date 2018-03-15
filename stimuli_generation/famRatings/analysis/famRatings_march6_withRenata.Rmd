@@ -13,15 +13,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 suppressPackageStartupMessages(c("dplyr","langcog","tidyr","ggplot2","lme4"))
-library(dplyr)
+library(imager)
+library(langcog)
 library(ggplot2)
 library(rjson)
 library(stringr)
 library(tidyr)
-library(dplyr)
 library(forcats)
-library(langcog)
-
+library(tidyverse)
+library(here)
 ```
 
 ## load datafiles and put in a data frame
@@ -49,7 +49,7 @@ shortFileName <- function(fileName){
 # make shorter iamge names for plots, etc.
 d.raw <- d.raw %>%
   group_by(imageName) %>%
-  mutate(imageNameShort = shortFileName(imageName))
+  dplyr::mutate(imageNameShort = shortFileName(imageName))
 ```
 
 2. Do some basic preprocessing - filter by unfamiliar objects
@@ -60,10 +60,10 @@ thres=.25
 
 d.unfamiliar <- d.raw %>%
   group_by(imageNameShort) %>%
-  summarize(avgSeenObject = mean(seenObject), avgKnowLabel = mean(knowLabel), avgKnowFunction = mean(knowFunction)) %>%
-  mutate(unFamiliar = (avgSeenObject<= thres & avgKnowLabel<=thres  & avgKnowFunction<=thres)) %>%
-  filter(unFamiliar == TRUE) %>% ## only get unfamiliar objects
-  mutate(imageNameShort = fct_reorder(imageNameShort, avgSeenObject)) ## reorders varibles accordinf to #avgSeenObject for plotting
+  dplyr::summarize(avgSeenObject = mean(seenObject), avgKnowLabel = mean(knowLabel), avgKnowFunction = mean(knowFunction)) %>%
+  dplyr::mutate(imageNameShort = fct_reorder(imageNameShort, avgSeenObject)) %>% ## reorders varibles accordinf to #avgSeenObject for plotting
+  dplyr::mutate(unFamiliar = (avgSeenObject<= thres & avgKnowLabel<=thres  & avgKnowFunction<=thres)) %>%
+  filter(unFamiliar == TRUE) ## only get unfamiliar objects
 
 ```
 
@@ -78,6 +78,30 @@ ggplot(d.unfamiliar, aes(x = as.factor(imageNameShort), y = avgSeenObject)) +
 4. Automated selection of objects and output csv with those categories
 ```{r}
 write.csv(d.unfamiliar,"UnfamiliarObjects_ForNorming.csv")
+```
+
+5. Write out these images to a directory
+```{r}
+imgPath= 'stimuliGeneration/famRatings/experiment/imagesToNorm/' # get images from here
+imgPathSave= 'stimuliGeneration/famRatings/analysis/selectedImages/' # save here
+
+# go through and save full paths for each images
+saveImages <- d.unfamiliar %>%
+  mutate(fileName = paste0(here::here(imgPath),imageNameShort)) %>%
+  mutate(saveFileName = paste0(here::here(imgPathSave),imageNameShort))
+
+# turn special characters back into spaces
+saveImages$saveFileName = gsub("%20", " ", saveImages$saveFileName)
+saveImages$fileName = gsub("%20", " ", saveImages$fileName)
+
+# save out each images to this new direcotry
+for (imageInd in 1:length(saveImages$fileName)) {
+  thisImageName = saveImages$fileName[imageInd]
+  thisImage=load.image(thisImageName)
+  thisSaveImName = saveImages$saveFileName[imageInd]
+  imager::save.image(thisImage,thisSaveImName)
+}
+
 ```
 
 
