@@ -1,0 +1,1 @@
+python extract_features_labelconcept.py --data='/home/bria/labelconcept/imageCategoryTest' --layer_ind=6
