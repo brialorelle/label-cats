@@ -1,4 +1,4 @@
-function [newIm flag] = imAreaResize(im, targetPxCount, frame)
+function [newIm flag newPxCount] = imAreaResize(im, targetPxCount, frame)
 
 
 % resize image to have the proper target pixel count
@@ -8,23 +8,26 @@ function [newIm flag] = imAreaResize(im, targetPxCount, frame)
 
 
 imBW        = mean(im,3);
-imThresh    = imBW<250;
+imThresh    = imBW<253;
 pxCount     = sum(imThresh(:));
 pxTotal     = length(imThresh(:));
 pctArea     = pxCount/pxTotal * 100;
 
 % 
-% subplot(1,2,1)
-% imagesc(imBW);  axis square;
-% subplot(1,2,2)
-% imagesc(imThresh); axis square;
-% keyboard
+subplot(1,2,1)
+imshow(imBW./255);  axis square;
+subplot(1,2,2)
+imshow(imThresh); axis square;
+% write saVe figure function here
+keyboard
 
 % compute the size it has to be to achieve the target Px Count
 scaleFactor = sqrt(targetPxCount/pxCount);
 
-
+% critical step here!
 newIm = imresize(im, scaleFactor);
+
+% recalculate new px count
 imBW        = mean(newIm,3);
 imThresh    = imBW<253;
 newPxCount  = sum(imThresh(:));
