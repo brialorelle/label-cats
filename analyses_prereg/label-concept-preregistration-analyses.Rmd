@@ -17,14 +17,14 @@ library(tidyverse)
 ## Load preprocesed data, helper files
 ```{r}
 # Directories and helper code
-path="analyses-prereg"
+path="analyses_prereg"
 
-# read in simulated data
-d <- read.csv(here::here(path, "SimulatedData.csv"))
-d$subid = as.factor(d$subidSim)
+# read in pilot data for sanity checks data
+d <- read.csv(here::here(path, "processed_data/labelcats-pilot-all.csv"))
+d$subid = as.factor(d$subid)
 
 ## Read in .csv sheet with the SMI names for the stimuli we're going to be looking at
-condOrder <- read.csv(here::here(path,"info/stimInfo.csv"))
+condOrder <- read.csv(here::here(path,"exp_information/stimInfo.csv"))
 
 # Get sets of codes useful for importing SMI eyetracking data
 source(here::here(path,"HelperCode/et_helper_bll.R"))
@@ -88,10 +88,10 @@ d <- d %>%
   # filter(is.element(subid,subsToInclude_FamOK$subid)) %>% # only include participants who saw fam trials
   inner_join(trialsToInclude, by=c("subid","TrialType","StimName")) ## only include trials with enough data
 
-# Check how many subjects we have in each condition
-countSubjects <- d %>%
-  group_by(AuditoryCond, StimGroup) %>%
-  summarize(numSubjects = length(unique(subid)))
+# Check how many subjects we have in each condition - fails right now because no auditory conditions
+# countSubjects <- d %>%
+#   group_by(AuditoryCond, StimGroup) %>%
+#   summarize(numSubjects = length(unique(subid)))
 
 
 ```
@@ -101,7 +101,7 @@ countSubjects <- d %>%
 
 CALIB_SACCADE_TIME = .3 # time it should take for infants to saccade to the actual stimulus if they are following perfectly (300ms)
 
-pts <- read_csv(here::here("analyses-pilot/info/ball_calib_timing.csv")) %>% 
+pts <- read_csv(here::here("analyses_prereg/info/ball_calib_timing.csv")) %>% 
     mutate(start_time = start_time.onset/1000  + CALIB_SACCADE_TIME,
            end_time = end_time.onset/1000 + CALIB_SACCADE_TIME) %>%
     mutate(true_x=scale(true_x,scale = (720/1920), center = FALSE)) %>% # orig movie dim / screen dim (x)
@@ -228,14 +228,24 @@ d.cleaned <- rezero.trials(d.cleaned )
 
 ## H1/H2 Replication tests: Bayes Factor t-tests for Labels vs. Tones and for Labels vs. Silence
 ```{r}
-novPrefsByCond <- d.cleaned %>%
-  filter(TrialType == "TestTrial") %>%
+# read in simulated data for analyses simulations
+simData <- as.tibble(read.csv(here::here(path, "simulated_data/SimulatedMeans.csv"))) %>%
+  rename(AuditoryCond = condition,novelty = value) %>%
+  mutate(Participant = as.factor(X)) 
+
+# novPrefsByCond <- d.cleaned %>%
+  # filter(TrialType == "TestTrial") %>% # only one trial type right now
+  # group_by(Participant,AuditoryCond) %>%
+  # dplyr::summarise(meanNovelty = mean(novelty, na.rm=TRUE))
+ 
+novPrefsByCond <- simData %>%
   group_by(Participant,AuditoryCond) %>%
   dplyr::summarise(meanNovelty = mean(novelty, na.rm=TRUE))
-  
+
 LabelsNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="labels"]
 TonesNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="tones"]
 MusicNovelty = novPrefsByCond$meanNovelty[novPrefsByCond$AuditoryCond=="music"]
+
 
 LabelsvTones = BayesFactor::ttestBF(LabelsNovelty, TonesNovelty)
 LabelsvMusic = BayesFactor::ttestBF(LabelsNovelty, MusicNovelty)

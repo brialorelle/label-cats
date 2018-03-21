@@ -14,7 +14,7 @@ library(BFDA)
 
 ## Extract effect sizes from meta-analysis for conditions and age ranges of interest
 ```{r}
-meta=as.tibble(read.csv('Label advantage in concept learning.csv')) 
+meta=as.tibble(read.csv('meta_analysis/Label advantage in concept learning.csv')) 
 
 # reported in abstract, across all conditions and ages
 effectSizes_All<- meta %>%
@@ -73,27 +73,60 @@ plot(s0)
 ```
 
 
-#### NOT INCLUDED: Considered trying to incoporate variability estimates into effect size simulations via extra simualtions, but did not given that the sd estimates for tones are from a very small N in this age range 
+# break out avg and sd of novelty pref for simulating data where this makes sense to calculate (some NA)
 ```{r}
-ES_mean_tones <- effectSizes_Targeted$meanEffect_Targeted[1]
-ES_sd_tones <- effectSizes_Targeted$sdEffect_Targeted[1]
 
-ES_mean_labels <- effectSizes_Targeted$meanEffect_Targeted[2]
-ES_sd_labels <- effectSizes_Targeted$sdEffect_Targeted[2]
+novPrefSummary<- meta %>%
+  filter(audio_condition %in% c("noun","silence", "non-linguistic sound")) %>%
+  filter(response_mode ==  "eye-tracking") %>%
+  group_by(audio_condition) %>%
+  summarize(meanNov = mean(x_1, na.rm=TRUE), sdNov = sd(SD_1,na.rm=TRUE), countStudies = length(x_1))
 
-n_sims <- 500
-sims <- as.tibble(expand.grid(sim = 1:n_sims)) %>%
+nov_mean_tones <- novPrefSummary$meanNov[1]
+nov_sd_tones <- novPrefSummary$sdNov[1]
+
+nov_mean_labels <- novPrefSummary$meanNov[2]
+nov_sd_labels <- novPrefSummary$sdNov[2]
+
+nov_mean_silence <- novPrefSummary$meanNov[3]
+nov_sd_silence <- novPrefSummary$sdNov[3]
+```
+
+## Simulate data based on these estimates
+```{r}
+subsPerGroup = 60
+
+ES <- .5
+n_sims <- 100
+ns <- c(20,60)
+
+sims <- as.tibble(expand.grid(sim = 1:n_sims, 
+                      n = ns)) %>%
   mutate(idx = 1:n()) %>%
   split(.$idx) %>%
   map_df(function (x) {
-    mu_es_labels <- rnorm(n = 1, mean = ES_mean_labels, sd = ES_sd_labels) # simulate an effect size for labels from this   distribution
-    mu_es_tones <- rnorm(n = 1, mean = ES_mean_tones, sd = ES_sd_tones) # simulate an effect size for tones
-    es_diff_sim <- mu_es_labels - mu_es_tones # output simulated diff in effect size - labels vs. tones
-    x$es_diff_sim = es_diff_sim
-    return (x)
+    d1 <- rnorm(n = x$n)
+    d2 <- rnorm(n = x$n, mean = ES)
+    x$p <- t.test(d1, d2)$p.value
+    return(x)
   })
 
-ES_diff_estimate_mean = mean(sims$es_diff_sim)
-ES_diff_estimate_sd = sd(sims$es_diff_sim)
+labels <- as.tibble(rnorm(n = subsPerGroup, mean = nov_mean_labels, sd = nov_sd_labels*3) )
+tones <- rnorm(n = subsPerGroup, mean = nov_mean_tones, sd = nov_sd_tones*3) 
+silence <- rnorm(n = subsPerGroup, mean = nov_mean_silence, sd = nov_sd_silence*3) 
 
+labels <- as.tibble(labels) %>%
+  mutate(condition = "labels") 
+
+tones <- as.tibble(tones) %>%
+  mutate(condition = "tones") 
+
+silence <- as.tibble(tones) %>%
+  mutate(condition = "music") 
+
+allsims <- labels %>%
+  bind_rows(tones) %>%
+  bind_rows(silence)
+
+write.csv(allsims, "simulated_data/SimulatedMeans.csv")
 ```

@@ -21,6 +21,7 @@ echo "opened before attempting to start a new Jupyter notebook server."
 echo 
 echo
 
+module load py-jupyter
 
 # Start a notebook, adjust the URL to match our convoluted tunnel above 
 # so that the link will work without any extra effort. 
