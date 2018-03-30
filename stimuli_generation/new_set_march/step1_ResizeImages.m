@@ -14,23 +14,42 @@ visPixelCount   = frameArea * visSize/100;
 
 % get categories by reading image files folder
 topDir=pwd;
-stimDir='set1'
+stimDir='set5'
 categories = getVisibleFiles(stimDir)
 
 % remove that directory if it's already there:
-saveDir = 'set1_resized';
-if exist(saveDir, 'dir')
-    rmdir(saveDir, 's')
-end
+saveDir = [stimDir '_resized'];
+% if exist(saveDir, 'dir')
+%     rmdir(saveDir, 's')
+% end
 mkdir(saveDir)
 
+%% saving dir for thresholded figures
+thresSaveDir = [stimDir '_Thresholds']
+% if exist(thresSaveDir,'dir')
+%     rmdir(thresSaveDir,'s')
+% end
+mkdir(thresSaveDir)
+
 % loop through all images:
+categories = {'pingpongpaddle_take3'}
+
 for s=1:length(categories)
     % get list
-    imageDir = fullfile(topDir, stimDir, categories(s).name);
-    imList = getVisibleFiles(imageDir);
-    
-    stimSaveDir=[saveDir filesep categories(s).name]
+    try
+        imageDir = fullfile(topDir, stimDir, categories(s).name);
+        imList = getVisibleFiles(imageDir);
+        
+        stimSaveDir=[saveDir filesep categories(s).name]
+        thisCategory=categories(s).name
+    catch % if we put in categories manually
+        imageDir = fullfile(topDir, stimDir, categories{s});
+        imList = getVisibleFiles(imageDir);
+        
+        stimSaveDir=[saveDir filesep categories{s}]
+        thisCategory=categories{s} 
+    end
+        
     if exist(stimSaveDir)
         rmdir(stimSaveDir,'s')
     end
@@ -38,18 +57,20 @@ for s=1:length(categories)
     countCat=0;
     
     for i=1:length(imList)
-        try
+%         try
         % read in image
-        im = imread(fullfile(topDir, stimDir, categories(s).name, imList(i).name));
+        im = imread(fullfile(topDir, stimDir, thisCategory, imList(i).name));
         
         % image(im) % show me the image
         % imageBW = mean(im,3)./255;
         
-        [resizedIm flag newPxCount] = imAreaResize(im, visPixelCount, frame);
+        saveName = [thisCategory '_' imList(i).name];
         
         if any(size(mean(im,3))<300) % don't get low-res images
             disp('image too small!')
             flag=1
+        else
+          [resizedIm flag newPxCount] = imAreaResize(im, saveName, thresSaveDir,  visPixelCount, frame);
         end
         
         if ~flag 
@@ -61,19 +82,15 @@ for s=1:length(categories)
                 imageStr=num2str(countCat);
             end
             
-            fn = fullfile(saveDir, [categories(s).name], [imageStr '_' categories(s).name '_'  imList(i).name]);
+            fn = fullfile(saveDir, [thisCategory], [imageStr '_' thisCategory '_'  imList(i).name]);
             imwrite(resizedIm./255, fn, 'png');
         end
         
-        catch
-            disp(['error with image' imList(i).name])
-        end
     end
     
 end
 
 
-s
 
 end
 

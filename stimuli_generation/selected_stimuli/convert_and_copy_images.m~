@@ -1,0 +1,52 @@
+function copyAndResaveImages()
+
+% get sets
+topDir=pwd;
+stimDir='setImages'
+sets = getVisibleFiles(stimDir)
+
+
+for s=1:length(sets)
+    thisSet = sets(s).
+    setDir = fullfile(topDir, stimDir, sets(s).name);
+    categoryList = getVisibleFiles(setDir);
+  
+    for c=1:length(categories)
+        categoryDir = fullfile(setDir, categories(s).name)
+        %
+        stimSaveDir = ['allImages' filesep 'categories(s).name']
+        if exist(stimSaveDir)
+            rmdir(stimSaveDir,'s')
+        end
+        mkdir(stimSaveDir)
+        imList = getVisibleFiles(categoryDir);
+        
+    for i=1:length(imList)
+        im = imread(fullfile(topDir, stimDir, thisSet, thisCategory, imList(i).name));
+        saveName = [thisCategory '_' num2str(i) '.jpg'];
+        saveFileName = [saveDir filesep saveName]
+        imwrite(resizedIm./255, fn, '.jpg');
+    end
+    
+end
+
+end
+
+end
+
+function files = getVisibleFiles(stimDir)
+% don't get invisible files
+files=dir(stimDir);
+dropThese=[];
+for i=1:length(files)
+    if strfind(files(i).name(1),'.')
+        dropThese(end+1)=i;
+    end
+end
+files(dropThese)=[];
+
+end
+
+
+
+
